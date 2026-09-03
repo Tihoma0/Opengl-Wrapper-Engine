@@ -8,7 +8,6 @@ out vec4 FragColor;
 
 void main() {
     float dist = length(frag_pos) * radius;
-
     float alpha = min(1.0f, radius - dist);
 
     FragColor = vec4(color.rgb, color.a * alpha);
