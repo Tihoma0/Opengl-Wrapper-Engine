@@ -1,0 +1,7 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#ifdef QCONFIG_ENABLE_ALL
+    #define CACHE_SAMPLER_PARAMS
+#endif //QCONFIG_ENABLE_ALL
+#endif //CONFIG_H
