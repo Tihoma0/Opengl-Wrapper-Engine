@@ -926,7 +926,7 @@ void high_level_test() {
     CircleGroup group = CircleGroup({});
     int num_rectangles = 1;
     for (int i = 0; i < num_rectangles; ++i) {
-        group.add_circle(Circle(0, 0, 50));
+        group.add_circle(Circle(0, 0, 50), Color(0xff00ffff));
     }
     while (true) {
         Renderer::clear(Color(0x777777ff));

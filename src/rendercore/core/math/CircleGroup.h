@@ -1,7 +1,3 @@
-//
-// Created by marku on 03.09.2026.
-//
-
 #ifndef CIRCLEGROUP_H
 #define CIRCLEGROUP_H
 #include <memory>
@@ -9,6 +5,7 @@
 
 #include "rendercore/mesh/Mesh.h"
 
+class Color;
 class Circle;
 
 
@@ -17,7 +14,7 @@ class CircleGroup {
 public:
     explicit CircleGroup(const std::vector<Circle> &circles);
 
-    void add_circle(const Circle &circle);
+    void add_circle(const Circle &circle, const Color &color);
 
     void build_mesh();
 
@@ -25,6 +22,7 @@ public:
 private:
     bool is_dirty = true;
     std::vector<Circle> circles;
+    std::vector<Color> colors;
     std::shared_ptr<Mesh> mesh;
 };
 
