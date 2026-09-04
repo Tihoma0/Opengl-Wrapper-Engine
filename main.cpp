@@ -925,7 +925,7 @@ void high_level_test() {
     int num_shapes = 400;
     std::mt19937 rng(std::random_device{}());
     std::uniform_real_distribution<float> dist(0.0f, 500.0f);
-    const std::vector colors = {
+    std::vector<Color> colors = {
         Color(0xffffffff),
         Color(0x00ffffff),
         Color(0xff00ffff),
