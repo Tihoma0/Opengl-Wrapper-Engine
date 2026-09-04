@@ -1,8 +1,8 @@
 #version 330 core
-uniform vec4 color;
-uniform float radius;
 
 in vec2 frag_pos;
+in float radius;
+in vec4 color;
 
 out vec4 FragColor;
 

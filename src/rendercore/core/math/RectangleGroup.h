@@ -1,6 +1,5 @@
 #ifndef RECTANGLEGROUP_H
 #define RECTANGLEGROUP_H
-#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -10,17 +9,18 @@
 
 class RectangleGroup {
 public:
-    RectangleGroup(const std::vector<Rectangle> &rectangles);
+    RectangleGroup(const std::vector<Rectangle> &rectangles, const std::vector<Color> &colors);
 
 
     void build_mesh();
 
-    void add_rectangle(const Rectangle &rectangle);
+    void add(const Rectangle &rectangle, const Color &color);
 
     std::shared_ptr<Mesh> get_mesh() { return mesh; }
 
 private:
     std::vector<Rectangle> rects;
+    std::vector<Color> colors;
     std::shared_ptr<Mesh> mesh;
     bool is_dirty = true;
 };

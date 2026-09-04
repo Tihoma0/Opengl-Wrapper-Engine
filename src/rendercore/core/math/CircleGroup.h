@@ -1,3 +1,7 @@
+//
+// Created by marku on 03.09.2026.
+//
+
 #ifndef CIRCLEGROUP_H
 #define CIRCLEGROUP_H
 #include <memory>
@@ -12,9 +16,9 @@ class Circle;
 
 class CircleGroup {
 public:
-    explicit CircleGroup(const std::vector<Circle> &circles);
+    explicit CircleGroup(const std::vector<Circle> &circles, const std::vector<Color> &colors);
 
-    void add_circle(const Circle &circle, const Color &color);
+    void add(const Circle &circle, const Color &color);
 
     void build_mesh();
 

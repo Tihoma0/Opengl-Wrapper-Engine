@@ -3,10 +3,12 @@
 //
 
 #include "RectangleGroup.h"
+#include <rendercore/surface/Color.h>
+#include <iostream>
 
-
-RectangleGroup::RectangleGroup(const std::vector<Rectangle> &rectangles) {
+RectangleGroup::RectangleGroup(const std::vector<Rectangle> &rectangles, const std::vector<Color> &colors) {
     this->rects = rectangles;
+    this->colors = colors;
 }
 
 void DebugBoundVAO() {
@@ -72,10 +74,23 @@ void RectangleGroup::build_mesh() {
     const ArrayBufferAttribute attribute = ArrayBufferAttribute(4, 1).set_offset(0).set_divisor(1);
     const std::shared_ptr<ArrayBuffer> buf = ArrayBuffer::create(data);
     buf->add_attribute(attribute);
+    std::vector<float> color_data(colors.size() * 4);
+    for (int i = 0; i < colors.size(); ++i) {
+        color_data[i*4] = colors[i].r;
+        color_data[i*4 + 1] = colors[i].g;
+        color_data[i*4 + 2] = colors[i].b;
+        color_data[i*4 + 3] = colors[i].a;
+    }
+    const std::shared_ptr<ArrayBuffer> color_buf = ArrayBuffer::create(color_data);
+    const ArrayBufferAttribute color_attribute = ArrayBufferAttribute(4, 2).set_offset(0).set_divisor(1);
+    color_buf->add_attribute(color_attribute);
     mesh->add_instance_buffer(buf);
+    mesh->add_instance_buffer(color_buf);
     is_dirty = false;
 }
 
-void RectangleGroup::add_rectangle(const Rectangle &rectangle) {
+void RectangleGroup::add(const Rectangle &rectangle, const Color &color) {
     rects.push_back(rectangle);
+    colors.push_back(color);
+    is_dirty = true;
 }

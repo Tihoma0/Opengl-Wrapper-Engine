@@ -6,6 +6,7 @@
 
 
 #include <cassert>
+#include <random>
 #include <thread>
 
 #include "rendercore/Graphics.h"
@@ -918,30 +919,35 @@ void high_level_test() {
         "",
         500, 500
     );
-    int tick = 0;
     auto last = std::chrono::steady_clock::now();
     int frames = 0;
-    auto texture = Texture2D::create();
-    texture->set_image(Image("../data/Arm_back.png"));
-    CircleGroup group = CircleGroup({});
-    int num_rectangles = 1;
-    for (int i = 0; i < num_rectangles; ++i) {
-        group.add_circle(Circle(0, 0, 50), Color(0xff00ffff));
+    RectangleGroup group = RectangleGroup({}, {});
+    int num_shapes = 400;
+    std::mt19937 rng(std::random_device{}());
+    std::uniform_real_distribution<float> dist(0.0f, 500.0f);
+    const std::vector colors = {
+        Color(0xffffffff),
+        Color(0x00ffffff),
+        Color(0xff00ffff),
+        Color(0xff0000ff),
+        Color(0x0000ffff),
+        Color(0x00ff00ff),
+    };
+    for (int i = 0; i < num_shapes; ++i) {
+        group.add(Rectangle(dist(rng), dist(rng), 20, 20), colors[static_cast<int>(dist(rng)) % colors.size()]);
     }
     while (true) {
         Renderer::clear(Color(0x777777ff));
         for (int i = 0; i < 1; ++i) {
-            Graphics::draw_circle_group(window, group, Color(0xff00ffff));
+            Graphics::draw_group(window, group, Color(0xff00ffff));
         }
 
         window->flipBuffers();
-        tick++;
         frames++;
 
         auto now = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration<double>(now - last).count();
 
-        if (elapsed >= 1.0) {
+        if (const auto elapsed = std::chrono::duration<double>(now - last).count(); elapsed >= 1.0) {
             std::cout << "FPS: " << frames / elapsed << '\n';
             frames = 0;
             last = now;

@@ -48,7 +48,7 @@ void Graphics::draw_texture(const std::shared_ptr<RenderTarget> &target, const R
 
 
 
-void Graphics::draw_rectangle_group(const std::shared_ptr<RenderTarget> &target, RectangleGroup &rects, const Color color) {
+void Graphics::draw_group(const std::shared_ptr<RenderTarget> &target, RectangleGroup &rects, const Color color) {
     init();
     Renderer::set_target(target);
     rectangle_group_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
@@ -58,11 +58,10 @@ void Graphics::draw_rectangle_group(const std::shared_ptr<RenderTarget> &target,
 }
 
 
-void Graphics::draw_circle_group(const std::shared_ptr<RenderTarget> &target, CircleGroup &circles, const Color color) {
+void Graphics::draw_group(const std::shared_ptr<RenderTarget> &target, CircleGroup &circles, const Color color) {
     init();
     Renderer::set_target(target);
     circle_group_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
-    circle_group_material->set_uniform("color", Vec4(color));
     circles.build_mesh();
     Renderer::draw(circles.get_mesh(), *circle_group_material, {});
 }
@@ -88,7 +87,7 @@ void Graphics::init() {
     texture_material = std::make_unique<Material>(texture_shader);
     auto rectangle_group_shader = Shader::create()
         ->add_file_src(ShaderStage::Vertex, "../shaders/rectangle_group_vert.glsl")
-        ->add_file_src(ShaderStage::Fragment, "../shaders/shapes_frag.glsl")
+        ->add_file_src(ShaderStage::Fragment, "../shaders/rectangle_group_frag.glsl")
         ->compile();
     rectangle_group_material = std::make_unique<Material>(rectangle_group_shader);
     auto circle_group_shader = Shader::create()

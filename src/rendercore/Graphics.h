@@ -23,9 +23,9 @@ public:
 
     static void draw_texture(const std::shared_ptr<RenderTarget> &target, const Rectangle &rect, const std::shared_ptr<Texture2D> &texture);
 
-    static void draw_rectangle_group(const std::shared_ptr<RenderTarget> &target, RectangleGroup &rects, Color color);
+    static void draw_group(const std::shared_ptr<RenderTarget> &target, RectangleGroup &rects, Color color);
 
-    static void draw_circle_group(const std::shared_ptr<RenderTarget> &target, CircleGroup &circles, Color color);
+    static void draw_group(const std::shared_ptr<RenderTarget> &target, CircleGroup &circles, Color color);
 private:
     static thread_local bool is_init;
     static std::shared_ptr<Mesh> quad;
