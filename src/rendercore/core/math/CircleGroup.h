@@ -22,6 +22,18 @@ public:
 
     void build_mesh();
 
+    Circle& get_circle(int index);
+
+    Color& get_color(int index);
+
+    void set(int i, const Circle &circle, const Color &color);
+    void set(int i, const Color &color);
+    void set(int i, const Circle &circle);
+
+    void clear();
+
+    void remove(int index);
+
     std::shared_ptr<Mesh> get_mesh() { return mesh; }
 private:
     bool is_dirty = true;

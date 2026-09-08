@@ -12,6 +12,8 @@ public:
         this->h = h;
     }
 
+    Rectangle(const Vec2 pos, const Vec2 size) : x(pos.x), y(pos.y), w(size.x), h(size.y) {}
+
     float x, y, w, h;
 
     [[nodiscard]] float top() const { return y + h; }

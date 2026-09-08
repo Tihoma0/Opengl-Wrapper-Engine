@@ -38,7 +38,7 @@ public:
 
     void debug(const std::string &msg) const;
 
-    void update(const Image& img, int x = 0, int y = 0, int w = -1, int h = -1) const;
+    void update(const Image& img, int x = 0, int y = 0, int w = -1, int h = -1);
 
     void regenerate_mipmap() const;
 

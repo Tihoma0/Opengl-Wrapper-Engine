@@ -1,9 +1,9 @@
 #ifndef IMAGE_H
 #define IMAGE_H
 
-#include <string>
 #include <vector>
 
+#include " util/Path.h"
 #include "rendercore/core/enums/textures/PixelStorageFormat.h"
 
 
@@ -18,9 +18,10 @@ enum ImageType {
 class Image {
 
 public:
-    explicit Image(const std::string &path, bool forceRGBA = false);
 
-    explicit Image(const std::vector<unsigned char> &data, int w, int h, PixelStorageFormat format);
+    Image(const Path &path, bool forceRGBA = false);
+
+    Image(const std::vector<unsigned char> &data, int w, int h, PixelStorageFormat format);
 
     Image(Color color, int w, int h, PixelStorageFormat fmt);
 
@@ -35,13 +36,13 @@ public:
     [[nodiscard]] PixelStorageFormat format() const { return m_format; }
     [[nodiscard]] std::vector<uint8_t>& buffer() { return m_buffer; }
     [[nodiscard]] const std::vector<uint8_t>& buffer() const { return m_buffer; }
-    [[nodiscard]] std::string path() const { return m_path; }
+    [[nodiscard]] Path path() const { return m_path; }
 
-    void save_png(const std::string& path) const;
+    void save_png(const Path &path) const;
 
 
 private:
-    std::string m_path;
+    Path m_path;
     PixelStorageFormat m_format = PixelStorageFormat::RGB8;
     std::vector<uint8_t> m_buffer = {};
     int m_width = 0;

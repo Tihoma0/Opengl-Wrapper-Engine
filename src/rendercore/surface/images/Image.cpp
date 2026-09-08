@@ -16,7 +16,7 @@
 
 
 
-Image::Image(const std::string &path, const bool forceRGBA) {
+Image::Image(const Path &path, const bool forceRGBA) {
     m_path = path;
     deserialize(forceRGBA);
 }
@@ -69,7 +69,7 @@ Image::Image(const int w, const int h, const PixelStorageFormat fmt, const int p
     m_buffer.resize(w * h * pixel_size);
 }
 
-void Image::save_png(const std::string& path) const {
+void Image::save_png(const Path &path) const {
     std::vector<uint8_t> flipped(m_buffer.size());
     int rowSize = m_width * get_bytes_per_pixel(m_format);
     for (int y = 0; y < m_height; ++y)
@@ -80,7 +80,7 @@ void Image::save_png(const std::string& path) const {
             flipped.data() + y * rowSize;
         std::memcpy(dst, src, rowSize);
     }
-    stbi_write_png(path.c_str(), m_width, m_height, get_bytes_per_pixel(m_format), flipped.data(), m_width * get_bytes_per_pixel(m_format));
+    stbi_write_png(path.string().c_str(), m_width, m_height, get_bytes_per_pixel(m_format), flipped.data(), m_width * get_bytes_per_pixel(m_format));
 }
 
 
@@ -88,7 +88,7 @@ void Image::deserialize(const bool forceRGBA) {
     int in_channels;
     unsigned char *data = stbi_load(m_path.c_str(), &m_width, &m_height, &in_channels, forceRGBA ? 4 : 0);
     if (!data) {
-        std::cerr << "Failed to load image: " << m_path << std::endl;
+        std::cerr << "Failed to load image: " << m_path.string() << std::endl;
         return;
     }
     const int out_channels = forceRGBA ? 4 : in_channels;

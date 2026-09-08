@@ -11,7 +11,9 @@
       <w>pname</w>
       <w>rectanglegroup</w>
       <w>renderbufferformat</w>
+      <w>rendercore</w>
       <w>srgba</w>
+      <w>textureatlas</w>
       <w>vbos</w>
     </words>
   </dictionary>

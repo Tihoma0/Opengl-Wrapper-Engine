@@ -42,20 +42,15 @@ void Material::upload() {
     }
     int slot = 0;
     for (const auto& [name, value] : m_texture_bindings) {
-        const auto [texture, sampler] = value;
+        const auto [texture, sampler, is_atlas, uv] = value;
         texture->bind(slot);
-        // std::cout << texture->get_default_sampler() << std::endl;
-        // std::cout << sampler << std::endl;
+        // if (is_atlas) {
+            // m_shader->setUniform(name + "_uv", uv);
+        // }
         if (sampler)
             sampler->bind(slot);
         else {
             texture->get_default_sampler()->bind(slot);
-            // texture->get_default_sampler()->print_filters();
-            // GLint filter;
-            // glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, &filter);
-            //
-            // std::cout << "min filter: 0x"
-            //           << std::hex << filter << std::dec << '\n';
         }
         m_shader->setUniform(name, slot);
         slot++;

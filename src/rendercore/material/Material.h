@@ -35,9 +35,11 @@ struct UniformEntry {
     bool dirty = true;
 };
 
-struct TextureBinding {
+struct TextureBinding { // TODO: add texture atlas support - also on glsl side
     std::shared_ptr<Texture2D> texture;
     std::shared_ptr<Sampler> sampler;
+    bool is_atlas = false;
+    Vec4 uv;
 };
 
 

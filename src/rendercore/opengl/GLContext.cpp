@@ -150,7 +150,9 @@ GLContext::GLContext(void* hwnd, const int glMayorVersion, const int glMinorVers
     glGetIntegerv(GL_MAX_DRAW_BUFFERS, &l.maxDrawBuffers);
     glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &l.maxVertexUniforms);
     glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &l.maxFragmentUniforms);
+
     GLState::maxTextureUnits = l.maxTextureUnits;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &state.pixel_unpack_alignment);
     return l;
 }
 
@@ -171,6 +173,10 @@ void GLContext::validate_state() const {
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &vertex_array);
     if (state.current_vertex_array != vertex_array)
         THROW_RUNTIME("Vertex array cache desync");
+    GLint unpack_alignment;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment);
+    if (state.pixel_unpack_alignment != unpack_alignment)
+        THROW_RUNTIME("Pixel unpack alignment cache desync");
     GLint texture;
     for (int i = 1; i < GLState::maxTextureUnits; ++i) {
         glActiveTexture(GL_TEXTURE0 + i);

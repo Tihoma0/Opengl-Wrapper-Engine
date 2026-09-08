@@ -12,7 +12,7 @@
 
 
 
-void ImageViewer::showImage(const Image& image, std::string name) {
+void ImageViewer::showImage(const Image& image, const std::string &name) {
     init();
     const auto timestamp =
         std::chrono::high_resolution_clock::now()
@@ -33,17 +33,17 @@ void ImageViewer::showImage(const Image& image, std::string name) {
 void ImageViewer::init() {
     if (initialized)
         return;
-    path = std::filesystem::absolute(path);
-    std::filesystem::create_directories(path);
-    for (const auto& entry : std::filesystem::directory_iterator(path))
+    path = std::filesystem::absolute(path.filesystem_path());
+    std::filesystem::create_directories(path.filesystem_path());
+    for (const auto& entry : std::filesystem::directory_iterator(path.filesystem_path()))
         std::filesystem::remove_all(entry.path());
     initialized = true;
 }
 
-void ImageViewer::open_file(std::filesystem::path path)
+void ImageViewer::open_file(const Path &path)
 {
 #ifdef _WIN32
-    ShellExecuteA(nullptr, "open", path.string().c_str(), nullptr, nullptr, SW_SHOW);
+    ShellExecuteA(nullptr, "open", path.c_str(), nullptr, nullptr, SW_SHOW);
 #elif __APPLE__
     std::string cmd = "open \"" + path + "\"";
     std::system(cmd.c_str());

@@ -3,20 +3,19 @@
 #define IMAGEVIEWER_H
 #include <filesystem>
 #include <string>
-
 #include "Image.h"
 
 
 
 class ImageViewer {
 public:
-    void showImage(const Image& image, std::string name = "");
+    static void showImage(const Image& image, const std::string &name = "");
 
 private:
-    std::filesystem::path path = "current_shown/";
-    bool initialized = false;
-    void init();
+    inline static Path path = "current_shown/";
+    inline static bool initialized = false;
+    static void init();
 
-    static void open_file(std::filesystem::path path);
+    static void open_file(const Path &path);
 };
 #endif //IMAGEVIEWER_H

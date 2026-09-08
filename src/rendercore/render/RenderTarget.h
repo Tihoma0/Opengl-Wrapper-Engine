@@ -1,6 +1,9 @@
 
 #ifndef RENDERTARGET_H
 #define RENDERTARGET_H
+
+#include <glad/glad.h>
+
 class RenderTarget {
 public:
     virtual ~RenderTarget() = default;

@@ -16,6 +16,16 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     )
 endif()
 
+include(FetchContent)
+
+FetchContent_Declare(
+        freetype
+        GIT_REPOSITORY https://github.com/freetype/freetype.git
+        GIT_TAG VER-2-13-3
+)
+
+FetchContent_MakeAvailable(freetype)
+
 # -------------------------------
 # GLFW
 # -------------------------------
@@ -37,7 +47,15 @@ add_library(engine ${ENGINE_SRC}
         src/rendercore/core/math/RectangleGroup.cpp
         src/rendercore/core/math/RectangleGroup.h
         src/rendercore/core/math/CircleGroup.cpp
-        src/rendercore/core/math/CircleGroup.h)
+        src/rendercore/core/math/CircleGroup.h
+        src/rendercore/text/Font.cpp
+        src/rendercore/text/Font.h
+        "src/ util/Path.cpp"
+        "src/ util/Path.h"
+        src/rendercore/text/Text.cpp
+        src/rendercore/text/Text.h
+        src/rendercore/surface/textures/TextureAtlas.cpp
+        src/rendercore/surface/textures/TextureAtlas.h)
 
 add_executable(GLWrapper_II main.cpp)
 
@@ -51,11 +69,9 @@ target_include_directories(GLWrapper_II PUBLIC
         external/glm
 )
 
+target_link_libraries(engine PRIVATE freetype)
 
-target_link_libraries(engine
-        PUBLIC
-        glad
-)
+target_link_libraries(engine PUBLIC glad)
 
 target_include_directories(engine PUBLIC
         src
@@ -66,6 +82,8 @@ target_include_directories(engine PUBLIC
         external/glm
 )
 
+
+target_link_libraries(GLWrapper_II PRIVATE freetype)
 
 target_link_libraries(GLWrapper_II
         PRIVATE

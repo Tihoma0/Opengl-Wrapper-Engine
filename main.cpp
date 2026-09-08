@@ -9,6 +9,9 @@
 #include <random>
 #include <thread>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 #include "rendercore/Graphics.h"
 #include "rendercore/window/Window.h"
 #include "src/rendercore/opengl/GLContext.h"
@@ -27,7 +30,6 @@
 #include "rendercore/surface/textures/Texture.h"
 
 #include "rendercore/core/enums/mesh/DrawOptions.h"
-#include "rendercore/core/math/Circle.h"
 #include "rendercore/core/math/Rectangle.h"
 #include "rendercore/surface/images/ImageProcessor.h"
 
@@ -211,7 +213,7 @@ void multicontexttest() {
 
 }
 
-void testII() {
+[[noreturn]] void testII() {
     auto window = Window::create("test", 800, 600, WindowPositions::CENTER_X, WindowPositions::CENTER_Y, 4, 5, false, true);
     auto shader = Shader::create()
         ->add_file_src(ShaderStage::Vertex, "../shaders/vertex.glsl")
@@ -231,7 +233,7 @@ void testII() {
     }
 }
 
-void rendererTest() {
+[[noreturn]] void rendererTest() {
     std::shared_ptr<Window> window = Window::create("Renderer Test", 800, 600, WindowPositions::CENTER_X, WindowPositions::CENTER_Y, 4, 5, false, true);
     std::shared_ptr<Shader> shader = Shader::create()->add_file_src(ShaderStage::Vertex, "../shaders/vertex.glsl")->add_file_src(ShaderStage::Fragment, "../shaders/fragment.glsl")->compile();
     Material material = Material(shader);
@@ -461,7 +463,7 @@ void conversion_stress_test()
     }
 }
 
-void new_tex_test() {
+[[noreturn]] void new_tex_test() {
     std::shared_ptr<Window> window = Window::create("Renderer Test", 800, 600, WindowPositions::CENTER_X, WindowPositions::CENTER_Y, 4, 5, false, true);
     std::cout << "starting" << std::endl;
     std::shared_ptr<Shader> shader = Shader::create()->add_file_src(ShaderStage::Vertex, "../shaders/vertex.glsl")->add_file_src(ShaderStage::Fragment, "../shaders/fragment.glsl")->compile();
@@ -499,7 +501,7 @@ void new_tex_test() {
 }
 
 
-void test()
+[[noreturn]] void test()
 {
     std::shared_ptr<Window> window = Window::create("Renderer Test", 800, 600, WindowPositions::CENTER_X, WindowPositions::CENTER_Y, 4, 5, false, true);
     std::cout << "starting" << std::endl;
@@ -538,7 +540,7 @@ void test()
 }
 
 
-void renderer_stress_test()
+[[noreturn]] void renderer_stress_test()
 {
     auto window = Window::create(
         "Renderer Stress Test",
@@ -883,7 +885,7 @@ void renderer_stress_test()
 }
 
 
-void verification_test() {
+[[noreturn]] void verification_test() {
     auto window = Window::create(
         "Renderer Stress Test",
         1200,
@@ -912,9 +914,7 @@ void verification_test() {
 }
 
 
-
-
-void high_level_test() {
+[[noreturn]] void high_level_test() {
     auto window = Window::create(
         "",
         500, 500
@@ -938,15 +938,33 @@ void high_level_test() {
     }
     while (true) {
         Renderer::clear(Color(0x777777ff));
-        for (int i = 0; i < 1; ++i) {
-            Graphics::draw_group(window, group, Color(0xff00ffff));
-        }
-
+        Graphics::draw(window, group);
         window->flipBuffers();
         frames++;
-
         auto now = std::chrono::steady_clock::now();
+        if (const auto elapsed = std::chrono::duration<double>(now - last).count(); elapsed >= 1.0) {
+            std::cerr << "FPS: " << frames / elapsed << '\n';
+            frames = 0;
+            last = now;
+        }
+    }
+}
 
+
+[[noreturn]] void textTest() {
+    auto window = Window::create("", 500, 500);
+    Font font = Font("C:/Windows/Fonts/times.ttf");
+    Text text = Text("Hello World Im here!", font, 48);
+    auto last = std::chrono::steady_clock::now();
+    int frames = 0;
+    // ImageViewer::showImage(img, "img");
+    while (true) {
+        Renderer::clear(Color(0xffffffff));
+        Graphics::draw(window, text, Vec2(100, 100));
+        window->flipBuffers();
+
+        frames++;
+        auto now = std::chrono::steady_clock::now();
         if (const auto elapsed = std::chrono::duration<double>(now - last).count(); elapsed >= 1.0) {
             std::cout << "FPS: " << frames / elapsed << '\n';
             frames = 0;
@@ -955,9 +973,6 @@ void high_level_test() {
     }
 }
 
-
-
 int main() {
-    high_level_test();
-    return 0;
+    textTest();
 }

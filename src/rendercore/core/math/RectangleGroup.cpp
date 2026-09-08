@@ -1,7 +1,3 @@
-//
-// Created by marku on 02.09.2026.
-//
-
 #include "RectangleGroup.h"
 #include <rendercore/surface/Color.h>
 #include <iostream>
@@ -92,5 +88,42 @@ void RectangleGroup::build_mesh() {
 void RectangleGroup::add(const Rectangle &rectangle, const Color &color) {
     rects.push_back(rectangle);
     colors.push_back(color);
+    is_dirty = true;
+}
+
+
+void RectangleGroup::clear() {
+    colors.clear();
+    rects.clear();
+    is_dirty = true;
+}
+
+Rectangle& RectangleGroup::get_rectangle(const int index) {
+    return rects[index];
+}
+
+Color& RectangleGroup::get_color(const int index) {
+    return colors[index];
+}
+
+void RectangleGroup::set(const int i, const Rectangle &rectangle, const Color &color) {
+    rects[i] = rectangle;
+    colors[i] = color;
+    is_dirty = true;
+}
+
+void RectangleGroup::set(const int i, const Color &color) {
+    colors[i] = color;
+    is_dirty = true;
+}
+
+void RectangleGroup::set(const int i, const Rectangle &rectangle) {
+    rects[i] = rectangle;
+    is_dirty = true;
+}
+
+void RectangleGroup::remove(const int index) {
+    rects.erase(rects.begin() + index);
+    colors.erase(colors.begin() + index);
     is_dirty = true;
 }

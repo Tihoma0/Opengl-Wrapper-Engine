@@ -39,7 +39,7 @@ struct GLState {
     std::vector<GLuint> bound_textures = std::vector<GLuint>(maxTextureUnits);
     std::vector<GLuint> bound_samplers = std::vector<GLuint>(maxTextureUnits);
     std::shared_ptr<Sampler> default_sampler = nullptr;
-
+    int pixel_unpack_alignment = 1;
 };
 
 class GLContext {

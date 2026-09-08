@@ -40,3 +40,39 @@ void CircleGroup::build_mesh() {
     is_dirty = false;
 }
 
+void CircleGroup::clear() {
+    colors.clear();
+    circles.clear();
+    is_dirty = true;
+}
+
+Circle& CircleGroup::get_circle(const int index) {
+    return circles[index];
+}
+
+Color& CircleGroup::get_color(const int index) {
+    return colors[index];
+}
+
+void CircleGroup::set(const int i, const Circle &Circle, const Color &color) {
+    circles[i] = Circle;
+    colors[i] = color;
+    is_dirty = true;
+}
+
+void CircleGroup::set(const int i, const Color &color) {
+    colors[i] = color;
+    is_dirty = true;
+}
+
+void CircleGroup::set(const int i, const Circle &circle) {
+    circles[i] = circle;
+    is_dirty = true;
+}
+
+void CircleGroup::remove(const int index) {
+    circles.erase(circles.begin() + index);
+    colors.erase(colors.begin() + index);
+    is_dirty = true;
+}
+

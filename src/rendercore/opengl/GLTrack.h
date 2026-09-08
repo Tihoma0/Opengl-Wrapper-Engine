@@ -78,4 +78,19 @@ inline void bind_texture(const GLuint unit, const GLuint tex) {
     GLContext::current_context->state.bound_textures[unit] = tex;
 }
 
+inline void set_pixel_unpack_alignment(const int alignment) {
+    if (!GLContext::current_context) {
+        THROW_RUNTIME("GLContext not initialized");
+    }
+    if (GLContext::current_context->state.pixel_unpack_alignment == alignment) {
+#ifdef DEBUG_CACHE
+        GLContext::current_context->validate_state();
+#endif
+        return;
+    }
+    glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+
+    GLContext::current_context->state.pixel_unpack_alignment = alignment;
+}
+
 #endif //GLTRACK_H

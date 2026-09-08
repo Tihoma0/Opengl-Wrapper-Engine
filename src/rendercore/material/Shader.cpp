@@ -68,13 +68,10 @@ std::shared_ptr<Shader> Shader::compile() {
     m_id = result.program;
     if (!result.newly_created) {
         is_compiled = true;
-        std::cout << "Helllllpooooooo2222222222222222222222 \n";
-
         return shared_from_this();
     }
     for (const auto& [stage, src] : m_sources) {
         GLuint shader = glCreateShader(to_gl_enum(stage));
-        std::cout << "Helllllpooooooo \n";
         const char* c = src.c_str();
 
         glShaderSource(shader, 1, &c, nullptr);

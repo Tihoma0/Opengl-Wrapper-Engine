@@ -1,11 +1,10 @@
 #ifndef WARNINGS_H
 #define WARNINGS_H
 
-#include <string>
-#include <stdexcept>
+#include <glad/glad.h>
 
 #define THROW_RUNTIME(msg) \
-throw std::runtime_error(std::string(msg) + " (" + __FILE__ + ":" + std::to_string(__LINE__) + ")")
+throw std::runtime_error(std::string(msg) + " (" + __FILE__ + ":" + std::to_string(__LINE__) + ")");
 
 class GLContext;
 
@@ -15,13 +14,7 @@ struct WarningConfig {
     bool gl_debug_messages = true;
 };
 
-inline void APIENTRY debugCallback(GLenum source,
-                            GLenum type,
-                            GLuint id,
-                            GLenum severity,
-                            GLsizei length,
-                            const GLchar* message,
-                            const void* userParam)
+inline void APIENTRY debugCallback(GLenum source, GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar* message,const void* userParam)
 {
     fprintf(stderr, "OpenGL Debug: %s\n", message);
 }
