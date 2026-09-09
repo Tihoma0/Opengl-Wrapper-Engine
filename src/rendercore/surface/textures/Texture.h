@@ -38,7 +38,7 @@ public:
 
     void debug(const std::string &msg) const;
 
-    void update(const Image& img, int x = 0, int y = 0, int w = -1, int h = -1);
+    void update(const Image& img, int x = 0, int y = 0, int w = -1, int h = -1) const;
 
     void regenerate_mipmap() const;
 
@@ -61,7 +61,7 @@ public:
     [[nodiscard]] GLuint id() const override { return m_id; }
     [[nodiscard]] AttachmentType type() const override { return AttachmentType::Texture; }
 
-private:
+protected:
     inline static bool is_initialized = false;
 
 
@@ -70,6 +70,8 @@ private:
     bool m_is_mutable = false;
     bool m_is_params_dirty = true;
     bool m_should_generate_mipmap = true;
+
+
 
     int m_width = 0;
     int m_height = 0;

@@ -4,34 +4,32 @@
 #include <unordered_map>
 
 #include "Texture.h"
-#include "glad/glad.h"
 #include "rendercore/core/math/ivec/IVec4.h"
 #include "rendercore/core/math/vec/Vec4.h"
 
 
 using TextureAtlasArea = int;
 
-class TextureAtlas {
+class TextureAtlas : public Texture2D, public std::enable_shared_from_this<TextureAtlas> {
 public:
-    TextureAtlas(int width, int height, PixelStorageFormat fmt = PixelStorageFormat::RGBA8);
 
+    TextureAtlas(const TextureAtlas&) = delete;
+    TextureAtlas& operator=(const TextureAtlas&) = delete;
+
+    TextureAtlas(TextureAtlas&&) noexcept = default;
+    TextureAtlas& operator=(TextureAtlas&&) noexcept = default;
+
+
+    static std::shared_ptr<TextureAtlas> create(int width, int height, PixelStorageFormat fmt = PixelStorageFormat::RGBA8);
     TextureAtlasArea add_texture(const Image &image, const IVec4 &uvs);
     TextureAtlasArea add_texture(const Image &image);
 
-    void bind() const;
-    void bind(int slot) const;
 
-    [[nodiscard]] GLuint id() const { return texture->id(); }
-    [[nodiscard]] int width() const { return m_width; }
-    [[nodiscard]] int height() const { return m_height; }
-
-    Vec4 get_uv(const TextureAtlasArea area) const;
+    Vec4 get_uv(TextureAtlasArea area) const;
 
 private:
-    std::shared_ptr<Texture2D> texture;
+    TextureAtlas(int width, int height, PixelStorageFormat fmt);
     std::unordered_map<TextureAtlasArea, Vec4> areas;
-    int m_width;
-    int m_height;
     int next_x = 0;
     int next_y = 0;
     int current_row_height = 0;

@@ -1,6 +1,3 @@
-//
-// Created by marku on 06.09.2026.
-//
 
 #ifndef FONT_H
 #define FONT_H
@@ -30,9 +27,7 @@ public:
 private:
     FT_Face face = nullptr;
 
-
-
-    TextureAtlas atlas = TextureAtlas(100, 100);
+    std::shared_ptr<TextureAtlas> atlas;
     std::unordered_map<char32_t, TextureAtlasArea> glyph_map;
 
     static thread_local FT_Library lib;

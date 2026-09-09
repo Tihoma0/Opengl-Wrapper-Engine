@@ -8,7 +8,7 @@
 class Text {
 public:
     std::string text;
-    Font font;
+    const Font& font;
     int size;
 
     Text(std::string text, const Font &font, const int size) : text(std::move(text)), font(font), size(size) {}

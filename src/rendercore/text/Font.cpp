@@ -8,7 +8,10 @@
 #include "rendercore/core/Warnings.h"
 #include "rendercore/material/Shader.h"
 #include "rendercore/mesh/Mesh.h"
+#include "rendercore/render/Renderer.h"
 #include "rendercore/surface/Color.h"
+#include "rendercore/core/enums/mesh/DrawOptions.h"
+#include "rendercore/surface/images/ImageProcessor.h"
 
 thread_local FT_Library Font::lib;
 thread_local std::shared_ptr<Mesh> Font::quad;
@@ -22,6 +25,7 @@ Font::Font(const Path &path) {
         0,
         &face
     );
+    atlas = TextureAtlas::create(600, 600, PixelStorageFormat::R8);
 
     if (error) {
         std::cout << "Failed to load font: " << error << '\n';
@@ -43,20 +47,30 @@ Bitmap Font::get_bitmap(const char ch, const int size) const {
     return b;
 }
 
-void Font::draw(const std::shared_ptr<RenderTarget> &target, const std::string &text, Vec2 pos, const int size, Color color) {
+void Font::draw(const std::shared_ptr<RenderTarget> &target, const std::string &text, Vec2 pos, const int size, const Color color) {
     target->bind();
-    atlas.bind(); // TODO: change after adding atlas support for the rest of the engine
+    material->set_uniform("screen_size", Vec2(target->width(), target->height()));
+    material->set_texture("tex", atlas);
+    Vec2 current_pos = pos;
     for (const char ch : text) {
         if (!glyph_map.contains(ch)) {
-            auto [buf, width, height] = get_bitmap(ch, size);
-            auto img = Image(buf, width, height, PixelStorageFormat::RGBA8);
-            glyph_map[ch] = atlas.add_texture(img);
+            auto [buf, width, height] = get_bitmap(ch, size/2);
+            auto img = Image(buf, width, height, PixelStorageFormat::R8);
+            // auto img = Image("../data/Arm_back.png");
+            // img = ImageProcessor::convert(img, PixelStorageFormat::R8);
+            glyph_map[ch] = atlas->add_texture(img);
         }
         const auto area = glyph_map.at(ch);
-        const auto uv = atlas.get_uv(area);
+        const auto uv = atlas->get_uv(area);
         material->set_uniform("uv", uv);
         material->set_uniform("color", Vec4(color));
-        material->set_uniform("pos", pos);
+        const float w = uv.z * atlas->width() * 2;
+        const float h = uv.w * atlas->height() * 2;
+        current_pos.y = pos.y - h + size;
+        material->set_uniform("size", Vec2(w, h));
+        material->set_uniform("pos", current_pos);
+        current_pos.x += w;
+        Renderer::draw(quad, *material, {});
     }
 }
 

@@ -954,13 +954,13 @@ void conversion_stress_test()
 [[noreturn]] void textTest() {
     auto window = Window::create("", 500, 500);
     Font font = Font("C:/Windows/Fonts/times.ttf");
-    Text text = Text("Hello World Im here!", font, 48);
+    Text text = Text("Hello World Im here!,.1234567890sdg bcns", font, 48);
     auto last = std::chrono::steady_clock::now();
     int frames = 0;
     // ImageViewer::showImage(img, "img");
     while (true) {
         Renderer::clear(Color(0xffffffff));
-        Graphics::draw(window, text, Vec2(100, 100));
+        font.draw(window, "Hello World Im here!,.1234567890sdg bcns", Vec2(0, 0), 100, Color(0xff00ffff));
         window->flipBuffers();
 
         frames++;

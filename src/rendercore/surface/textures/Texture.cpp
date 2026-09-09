@@ -111,7 +111,8 @@ void Texture2D::debug(const std::string &msg) const {
     std::cout << "debugging texture: " << msg << " is allocated: " << m_is_allocated << " id: " << m_id << " dirty params: " << m_is_params_dirty << " is mutable: " << m_is_mutable << "size: " << m_width << "x" << m_height << std::endl;
 }
 
-void Texture2D::update(const Image& img, int x, int y, int w, int h) {
+void Texture2D::update(const Image& img, const int x, const int y, int w, int h) const {
+    set_pixel_unpack_alignment(1);
     if (!subimage_compatible(m_format, img.format()))
         THROW_RUNTIME("Invalid image format");
     if (w == -1)
