@@ -15,7 +15,7 @@ struct DrawOptions {
 
     DrawOptions() = default;
 
-    explicit DrawOptions(const GLenum draw_mode, const int vertex_offset = NO_VALUE, const int vertex_count = NO_VALUE) : m_vertex_count(vertex_count), m_vertex_offset(vertex_offset), m_draw_mode(draw_mode) {}
+    explicit DrawOptions(const GLenum draw_mode, const int vertex_offset = 0, const int vertex_count = NO_VALUE) : m_vertex_count(vertex_count), m_vertex_offset(vertex_offset), m_draw_mode(draw_mode) {}
 
     DrawOptions& vertex_count(const int vertex_count) { this->m_vertex_count = vertex_count; return *this; }
 

@@ -1,6 +1,6 @@
 #ifndef CIRCLE_H
 #define CIRCLE_H
-#include "vec/Vec2.h"
+#include "../vec/Vec2.h"
 
 
 class Circle {

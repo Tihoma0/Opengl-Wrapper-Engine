@@ -3,12 +3,12 @@
 #define GRAPHICS_H
 #include <memory>
 
-#include "core/math/CircleGroup.h"
-#include "core/math/RectangleGroup.h"
-#include "render/Framebuffer.h"
+#include "core/math/shapes/CircleGroup.h"
+#include "core/math/shapes/RectangleGroup.h"
 #include "text/Text.h"
 
 
+class Line;
 class Rectangle;
 class Circle;
 
@@ -25,7 +25,9 @@ namespace Graphics {
 
     void draw(const std::shared_ptr<RenderTarget> &target, CircleGroup &circles);
 
-    void draw(const std::shared_ptr<RenderTarget> &target, const Text &text, Vec2 pos);
+    void draw(const std::shared_ptr<RenderTarget> &target, const Text &text, const Vec2 &pos, const Color &color);
+
+    void draw_line(const std::shared_ptr<RenderTarget> &target, Line &line, const Color &color);
 };
 
 

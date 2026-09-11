@@ -5,17 +5,24 @@
 #include "material/Shader.h"
 #include "mesh/Mesh.h"
 #include "rendercore/core/enums/mesh/DrawOptions.h"
-#include "core/math/Rectangle.h"
-#include "core/math/Circle.h"
+#include "core/math/shapes/Rectangle.h"
+#include "core/math/shapes/Circle.h"
+#include "core/math/shapes/Line.h"
 #include "render/Renderer.h"
 
 thread_local std::unique_ptr<Material> rectangle_material;
 thread_local std::unique_ptr<Material> circle_material;
+thread_local std::unique_ptr<Material> line_material;
+thread_local std::unique_ptr<Material> simple_line_material;
 thread_local std::unique_ptr<Material> texture_material;
 thread_local std::unique_ptr<Material> rectangle_group_material;
 thread_local std::unique_ptr<Material> circle_group_material;
+thread_local std::unique_ptr<Material> line_group_material;
+thread_local std::unique_ptr<Material> simple_line_group_material;
+
 thread_local bool is_init = false;
-std::shared_ptr<Mesh> quad;
+thread_local std::shared_ptr<Mesh> quad;
+thread_local std::shared_ptr<Mesh> simple_line;
 
 void Graphics::draw(const std::shared_ptr<RenderTarget> &target, const Rectangle &rect, const Color color) {
     init();
@@ -66,18 +73,21 @@ void Graphics::draw(const std::shared_ptr<RenderTarget> &target, CircleGroup &ci
     Renderer::draw(circles.get_mesh(), *circle_group_material, {});
 }
 
-void Graphics::draw(const std::shared_ptr<RenderTarget> &target, const Text &text, Vec2 pos) {
+void Graphics::draw(const std::shared_ptr<RenderTarget> &target, const Text &text, const Vec2 &pos, const Color &color) {
+    text.draw(target, pos, color);
+}
+
+
+
+
+void Graphics::draw_line(const std::shared_ptr<RenderTarget> &target, Line &line, const Color &color) {
     init();
     Renderer::set_target(target);
-    auto texture = Texture2D::create();
-    for (const auto &character : text.text) {
-        auto bitmap = text.font.get_bitmap(character, text.size);
-        auto img = Image(bitmap.buf, bitmap.width, bitmap.height, PixelStorageFormat::R8);
-        texture->set_image(img);
-        Rectangle rect = {pos, Vec2(bitmap.width, bitmap.height)};
-        draw(target, rect, texture);
-        pos.x += bitmap.width;
-    }
+    glLineWidth(line.width);
+    simple_line_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
+    simple_line_material->set_uniform("color", Vec4(color));
+    Renderer::draw(simple_line, *simple_line_material, DrawOptions(GL_LINES));
+
 }
 
 
@@ -108,7 +118,28 @@ void Graphics::init() {
         ->add_file_src(ShaderStage::Fragment, "../shaders/circle_group_frag.glsl")
         ->compile();
     circle_group_material = std::make_unique<Material>(circle_group_shader);
+    auto line_shader = Shader::create()
+        ->add_file_src(ShaderStage::Vertex, "../shaders/line_vert.glsl")
+        ->add_file_src(ShaderStage::Fragment, "../shaders/line_frag.glsl")
+        ->compile();
+    line_material = std::make_unique<Material>(line_shader);
+    auto simple_line_shader = Shader::create()
+        ->add_file_src(ShaderStage::Vertex, "../shaders/simple_line_vert.glsl")
+        ->add_file_src(ShaderStage::Fragment, "../shaders/simple_line_frag.glsl")
+        ->compile();
+    simple_line_material = std::make_unique<Material>(simple_line_shader);
+    auto line_group_shader = Shader::create()
+        ->add_file_src(ShaderStage::Vertex, "../shaders/line_group_vert.glsl")
+        ->add_file_src(ShaderStage::Fragment, "../shaders/line_group_frag.glsl")
+        ->compile();
+    line_group_material = std::make_unique<Material>(line_shader);
+    auto simple_line_group_shader = Shader::create()
+        ->add_file_src(ShaderStage::Vertex, "../shaders/simple_line_group_vert.glsl")
+        ->add_file_src(ShaderStage::Fragment, "../shaders/simple_line_group_frag.glsl")
+        ->compile();
+    simple_line_group_material = std::make_unique<Material>(simple_line_shader);
     quad = Mesh::create_quad(0, 0, 1, 1);
+    simple_line = Mesh::create_line(0, 0, 1, 0);
     is_init = true;
 }
 

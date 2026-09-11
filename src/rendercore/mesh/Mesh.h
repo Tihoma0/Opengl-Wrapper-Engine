@@ -12,6 +12,8 @@ class Mesh : public std::enable_shared_from_this<Mesh> {
 public:
     static std::shared_ptr<Mesh> create_quad(float x, float y, float width, float height);
 
+    static std::shared_ptr<Mesh> create_line(float x1, float y1, float x2, float y2);
+
     static std::shared_ptr<Mesh> create();
 
     Mesh(const Mesh&) = delete;

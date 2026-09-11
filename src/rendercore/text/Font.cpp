@@ -11,13 +11,13 @@
 #include "rendercore/render/Renderer.h"
 #include "rendercore/surface/Color.h"
 #include "rendercore/core/enums/mesh/DrawOptions.h"
-#include "rendercore/surface/images/ImageProcessor.h"
+#include "rendercore/surface/textures/Sampler.h"
 
 thread_local FT_Library Font::lib;
 thread_local std::shared_ptr<Mesh> Font::quad;
 thread_local std::unique_ptr<Material> Font::material;
 
-Font::Font(const Path &path) {
+Font::Font(const Path &path, int default_character_size) {
     init();
     const FT_Error error = FT_New_Face(
         lib,
@@ -25,16 +25,17 @@ Font::Font(const Path &path) {
         0,
         &face
     );
-    atlas = TextureAtlas::create(600, 600, PixelStorageFormat::R8);
-
+    atlas = TextureAtlas::create(default_character_size * 6, default_character_size * 6, PixelStorageFormat::R8);
+    atlas->set_default_sampler(Sampler::create()->set_filters(Filter::LinearMipmapLinear, Filter::LinearMipmapLinear));
+    this->default_character_size = default_character_size;
     if (error) {
         std::cout << "Failed to load font: " << error << '\n';
         THROW_RUNTIME("Failed to load font");
     }
 }
 
-Bitmap Font::get_bitmap(const char ch, const int size) const {
-    FT_Set_Pixel_Sizes(face, 0, size);
+Bitmap Font::get_bitmap(const char ch) const {
+    FT_Set_Pixel_Sizes(face, 0, default_character_size);
     if (FT_Load_Char(face, ch, FT_LOAD_RENDER))
         std::cerr << "Failed to load glyph" << std::endl;
     const FT_Bitmap& bitmap = face->glyph->bitmap;
@@ -47,25 +48,23 @@ Bitmap Font::get_bitmap(const char ch, const int size) const {
     return b;
 }
 
-void Font::draw(const std::shared_ptr<RenderTarget> &target, const std::string &text, Vec2 pos, const int size, const Color color) {
+void Font::draw(const std::shared_ptr<RenderTarget> &target, const std::string &text, const Vec2 pos, const int size, const Color color) {
     target->bind();
     material->set_uniform("screen_size", Vec2(target->width(), target->height()));
     material->set_texture("tex", atlas);
     Vec2 current_pos = pos;
     for (const char ch : text) {
         if (!glyph_map.contains(ch)) {
-            auto [buf, width, height] = get_bitmap(ch, size/2);
+            auto [buf, width, height] = get_bitmap(ch);
             auto img = Image(buf, width, height, PixelStorageFormat::R8);
-            // auto img = Image("../data/Arm_back.png");
-            // img = ImageProcessor::convert(img, PixelStorageFormat::R8);
             glyph_map[ch] = atlas->add_texture(img);
         }
         const auto area = glyph_map.at(ch);
         const auto uv = atlas->get_uv(area);
         material->set_uniform("uv", uv);
         material->set_uniform("color", Vec4(color));
-        const float w = uv.z * atlas->width() * 2;
-        const float h = uv.w * atlas->height() * 2;
+        const float w = uv.z * static_cast<float>(atlas->width()) * static_cast<float>(size) / static_cast<float>(default_character_size);
+        const float h = uv.w * static_cast<float>(atlas->height()) * static_cast<float>(size) / static_cast<float>(default_character_size);
         current_pos.y = pos.y - h + size;
         material->set_uniform("size", Vec2(w, h));
         material->set_uniform("pos", current_pos);

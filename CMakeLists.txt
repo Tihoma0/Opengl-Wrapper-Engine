@@ -42,20 +42,9 @@ file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS
 )
 
 add_library(engine ${ENGINE_SRC}
-        src/rendercore/core/math/Circle.cpp
-        src/rendercore/core/math/Circle.h
-        src/rendercore/core/math/RectangleGroup.cpp
-        src/rendercore/core/math/RectangleGroup.h
-        src/rendercore/core/math/CircleGroup.cpp
-        src/rendercore/core/math/CircleGroup.h
-        src/rendercore/text/Font.cpp
-        src/rendercore/text/Font.h
         "src/ util/Path.cpp"
         "src/ util/Path.h"
-        src/rendercore/text/Text.cpp
-        src/rendercore/text/Text.h
-        src/rendercore/surface/textures/TextureAtlas.cpp
-        src/rendercore/surface/textures/TextureAtlas.h)
+)
 
 add_executable(GLWrapper_II main.cpp)
 

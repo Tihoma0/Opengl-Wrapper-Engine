@@ -32,7 +32,18 @@ std::shared_ptr<Mesh> Mesh::create_quad(const float x, const float y, const floa
     return mesh_ptr;
 }
 
-
+std::shared_ptr<Mesh> Mesh::create_line(const float x1, const float y1, const float x2, const float y2) {
+    const std::vector line_vertices = {
+        x1, y1,
+        x2, y2
+    };
+    const auto line_buffer = ArrayBuffer::create(line_vertices);
+    const ArrayBufferAttribute attribute = ArrayBufferAttribute(2, 0).set_offset(0);
+    line_buffer->add_attribute(attribute);
+    auto mesh_ptr = create();
+    mesh_ptr -> add_vertex_buffer(line_buffer);
+    return mesh_ptr;
+}
 
 
 Mesh::~Mesh(){

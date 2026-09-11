@@ -30,7 +30,8 @@
 #include "rendercore/surface/textures/Texture.h"
 
 #include "rendercore/core/enums/mesh/DrawOptions.h"
-#include "rendercore/core/math/Rectangle.h"
+#include "rendercore/core/math/shapes/Line.h"
+#include "src/rendercore/core/math/shapes/Rectangle.h"
 #include "rendercore/surface/images/ImageProcessor.h"
 
 
@@ -953,14 +954,14 @@ void conversion_stress_test()
 
 [[noreturn]] void textTest() {
     auto window = Window::create("", 500, 500);
-    Font font = Font("C:/Windows/Fonts/times.ttf");
+    Font font = Font("C:/Windows/Fonts/times.ttf", 125);
     Text text = Text("Hello World Im here!,.1234567890sdg bcns", font, 48);
     auto last = std::chrono::steady_clock::now();
     int frames = 0;
     // ImageViewer::showImage(img, "img");
     while (true) {
         Renderer::clear(Color(0xffffffff));
-        font.draw(window, "Hello World Im here!,.1234567890sdg bcns", Vec2(0, 0), 100, Color(0xff00ffff));
+        font.draw(window, "Hello World Im here!,.1234567890sdg bcns", Vec2(0, 0), 500, Color(0xff00ffff));
         window->flipBuffers();
 
         frames++;
@@ -973,6 +974,17 @@ void conversion_stress_test()
     }
 }
 
+
+void line_test() {
+    auto window = Window::create("", 500, 500);
+    auto line = Line(0, 0, 500, 500, 250);
+    while (true) {
+        Renderer::clear(Color(0xffffffff));
+        Graphics::draw_line(window, line, Color(0xff0000ff));
+        window->flipBuffers();
+    }
+}
+
 int main() {
-    textTest();
+    line_test();
 }

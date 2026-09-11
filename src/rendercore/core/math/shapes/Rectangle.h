@@ -1,6 +1,6 @@
 #ifndef RECTANGLE_H
 #define RECTANGLE_H
-#include "vec/Vec2.h"
+#include "../vec/Vec2.h"
 
 
 class Rectangle {
