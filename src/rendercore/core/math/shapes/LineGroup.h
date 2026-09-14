@@ -1,6 +1,3 @@
-//
-// Created by marku on 03.09.2026.
-//
 
 #ifndef LINEGROUP_H
 #define LINEGROUP_H
@@ -18,9 +15,13 @@ class LineGroup {
 public:
     explicit LineGroup(const std::vector<Line> &lines, const std::vector<Color> &colors);
 
+    LineGroup();
+
     void add(const Line &line, const Color &color);
 
-    void build_mesh();
+    void build_line_mesh();
+
+    void build_quad_mesh();
 
     Line& get_line(int index);
 
@@ -34,12 +35,16 @@ public:
 
     void remove(int index);
 
-    std::shared_ptr<Mesh> get_mesh() { return mesh; }
+    std::shared_ptr<Mesh> get_line_mesh() { return line_mesh; }
+
+    std::shared_ptr<Mesh> get_quad_mesh() { return quad_mesh; }
 private:
-    bool is_dirty = true;
+    bool is_line_dirty = true;
+    bool is_quad_dirty = true;
     std::vector<Line> lines;
     std::vector<Color> colors;
-    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<Mesh> line_mesh;
+    std::shared_ptr<Mesh> quad_mesh;
 };
 
 

@@ -5,12 +5,7 @@
 
 class Rectangle {
 public:
-    Rectangle(const float x, const float y, const float w, const float h) {
-        this->x = x;
-        this->y = y;
-        this->w = w;
-        this->h = h;
-    }
+    Rectangle(const float x, const float y, const float w, const float h) : x(x), y(y), w(w), h(h) {}
 
     Rectangle(const Vec2 pos, const Vec2 size) : x(pos.x), y(pos.y), w(size.x), h(size.y) {}
 

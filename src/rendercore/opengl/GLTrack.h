@@ -3,7 +3,6 @@
 #include "GLContext.h"
 #include "../core/Warnings.h"
 #include "glad/glad.h"
-#include <iostream>
 #include <stdexcept>
 
 
@@ -91,6 +90,21 @@ inline void set_pixel_unpack_alignment(const int alignment) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 
     GLContext::current_context->state.pixel_unpack_alignment = alignment;
+}
+
+inline void set_patch_vertices(const int vertices) {
+    if (!GLContext::current_context) {
+        THROW_RUNTIME("GLContext not initialized");
+    }
+    if (GLContext::current_context->state.patch_vertices == vertices) {
+#ifdef DEBUG_CACHE
+        GLContext::current_context->validate_state();
+#endif
+        return;
+    }
+    glPatchParameteri(GL_PATCH_VERTICES, vertices);
+
+    GLContext::current_context->state.patch_vertices = vertices;
 }
 
 #endif //GLTRACK_H

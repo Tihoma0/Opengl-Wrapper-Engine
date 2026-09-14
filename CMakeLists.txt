@@ -44,6 +44,8 @@ file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS
 add_library(engine ${ENGINE_SRC}
         "src/ util/Path.cpp"
         "src/ util/Path.h"
+        src/rendercore/core/math/shapes/BezierGroup.cpp
+        src/rendercore/core/math/shapes/BezierGroup.h
 )
 
 add_executable(GLWrapper_II main.cpp)
@@ -94,8 +96,6 @@ else()
     )
 endif()
 
-if(MINGW)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++")
 
-    target_link_libraries(GLWrapper_II PRIVATE mingwex ucrt winpthread)
-endif()
+target_link_libraries(GLWrapper_II PRIVATE mingwex ucrt winpthread)
+

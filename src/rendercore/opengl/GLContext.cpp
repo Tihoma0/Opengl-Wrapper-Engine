@@ -1,6 +1,7 @@
 #include "rendercore/opengl/GLContext.h"
 
 #include <cassert>
+#include <iostream>
 
 #include "rendercore/core/Warnings.h"
 #include "rendercore/window/WindowUtils.h"
@@ -153,6 +154,9 @@ GLContext::GLContext(void* hwnd, const int glMayorVersion, const int glMinorVers
 
     GLState::maxTextureUnits = l.maxTextureUnits;
     glGetIntegerv(GL_UNPACK_ALIGNMENT, &state.pixel_unpack_alignment);
+    glGetIntegerv(GL_PATCH_VERTICES, &state.patch_vertices);
+    glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &l.maxTesselation);
+    glGetIntegerv(GL_MAX_PATCH_VERTICES, &l.maxPatchVertices);
     return l;
 }
 
@@ -185,6 +189,10 @@ void GLContext::validate_state() const {
             THROW_RUNTIME("Texture cache desync at slot " + std::to_string(i));
         }
     }
+    GLint patch_vertices;
+    glGetIntegerv(GL_PATCH_VERTICES, &patch_vertices);
+    if (state.patch_vertices != patch_vertices)
+        THROW_RUNTIME("Patch vertices cache desync");
 }
 
 GLContext::~GLContext() {

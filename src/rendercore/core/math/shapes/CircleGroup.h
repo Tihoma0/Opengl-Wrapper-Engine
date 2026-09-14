@@ -16,7 +16,7 @@ class Circle;
 
 class CircleGroup {
 public:
-    explicit CircleGroup(const std::vector<Circle> &circles, const std::vector<Color> &colors);
+    explicit CircleGroup(const std::vector<Circle> &circles = {}, const std::vector<Color> &colors = {});
 
     void add(const Circle &circle, const Color &color);
 

@@ -28,6 +28,8 @@ struct GLLimits {
     GLint maxDrawBuffers = 0;
     GLint maxVertexUniforms = 0;
     GLint maxFragmentUniforms = 0;
+    GLint maxPatchVertices = 0;
+    GLint maxTesselation = 0;
 };
 
 
@@ -40,6 +42,7 @@ struct GLState {
     std::vector<GLuint> bound_samplers = std::vector<GLuint>(maxTextureUnits);
     std::shared_ptr<Sampler> default_sampler = nullptr;
     int pixel_unpack_alignment = 1;
+    int patch_vertices = 0;
 };
 
 class GLContext {

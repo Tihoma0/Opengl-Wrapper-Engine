@@ -1,6 +1,5 @@
 #include <iostream>
 #include <memory>
-#define DEBUG_MODE
 #define QCONFIG_ENABLE_ALL
 
 
@@ -30,9 +29,17 @@
 #include "rendercore/surface/textures/Texture.h"
 
 #include "rendercore/core/enums/mesh/DrawOptions.h"
+#include "rendercore/core/math/shapes/Circle.h"
+#include "rendercore/core/math/shapes/CircleGroup.h"
+#include "rendercore/core/math/shapes/BezierCurve.h"
+#include "rendercore/core/math/shapes/BezierGroup.h"
 #include "rendercore/core/math/shapes/Line.h"
+#include "rendercore/core/math/shapes/LineGroup.h"
+#include "rendercore/core/math/shapes/RectangleGroup.h"
 #include "src/rendercore/core/math/shapes/Rectangle.h"
 #include "rendercore/surface/images/ImageProcessor.h"
+#include "rendercore/text/Font.h"
+#include "rendercore/text/Text.h"
 
 
 void multicontexttest() {
@@ -900,7 +907,7 @@ void conversion_stress_test()
     );
     auto shader = Shader::create();
     shader->add_file_src(ShaderStage::Vertex, "../shaders/shapes_vert.glsl");
-    shader->add_file_src(ShaderStage::Fragment, "../shaders/shapes_frag.glsl");
+    shader->add_file_src(ShaderStage::Fragment, "../shaders/frag.glsl");
     shader->compile();
 
     auto mesh = Mesh::create_quad(-1, -1, 1, 1);
@@ -961,7 +968,7 @@ void conversion_stress_test()
     // ImageViewer::showImage(img, "img");
     while (true) {
         Renderer::clear(Color(0xffffffff));
-        font.draw(window, "Hello World Im here!,.1234567890sdg bcns", Vec2(0, 0), 500, Color(0xff00ffff));
+        font.draw(window, "Hello World Im here!,.1234567890sdg bcns", Vec2(0, 0), 24, Color(0xff00ffff));
         window->flipBuffers();
 
         frames++;
@@ -975,16 +982,166 @@ void conversion_stress_test()
 }
 
 
-void line_test() {
-    auto window = Window::create("", 500, 500);
-    auto line = Line(0, 0, 500, 500, 250);
+[[noreturn]] void line_test() {
+    auto window = Window::create("", 1000, 500);
+    auto group = LineGroup();
+    const std::vector colors = {
+        Color(0xff0000ff),
+        Color(0xffff00ff),
+        Color(0x00ff00ff),
+        Color(0x00ffffff),
+        Color(0x0000ffff),
+        Color(0xff00ffff),
+    };
+    for (int i = 0; i < 100; ++i) {
+        group.add(Line(i * 10.0f, 10, 10 + i * 10.0f, 400), colors[i % colors.size()]);
+    }
+    auto line = Line(100, 100, 600, 200);
+    auto last = std::chrono::steady_clock::now();
+    int frames = 0;
     while (true) {
         Renderer::clear(Color(0xffffffff));
-        Graphics::draw_line(window, line, Color(0xff0000ff));
+        Graphics::draw(window, group);
+        // Graphics::draw_lines(window, group, 100.0f);
         window->flipBuffers();
+        frames++;
+        auto now = std::chrono::steady_clock::now();
+        if (const auto elapsed = std::chrono::duration<double>(now - last).count(); elapsed >= 1.0) {
+            std::cout << "FPS: " << frames / elapsed << '\n';
+            frames = 0;
+            last = now;
+        }
     }
 }
 
+
+[[noreturn]] void bezier_test() {
+    const auto window = Window::create("", 700, 700);
+    auto group = LineGroup();
+    const std::vector colors = {
+        Color(0xff0000ff),
+        Color(0xffff00ff),
+        Color(0x00ff00ff),
+        Color(0x00ffffff),
+        Color(0x0000ffff),
+        Color(0xff00ffff),
+    };
+    for (int i = 0; i < 100; ++i) {
+        group.add(Line(i * 10.0f, 10, 10 + i * 10.0f, 400), colors[i % colors.size()]);
+    }
+    CubicBezierCurve line(
+        Vec2(400.0f,  50.0f),
+        Vec2(750.0f,  50.0f),
+        Vec2( 50.0f, 550.0f),
+        Vec2(400.0f, 550.0f)
+    );
+    QuadraticBezierCurve line2(Vec2(100, 100), Vec2(100, 200), Vec2(400, 400), 25.0f);
+    auto last = std::chrono::steady_clock::now();
+    int frames = 0;
+    BezierGroup bgroup;
+    bgroup.add_curve(CubicBezierCurve(
+        Vec2(400.0f,  50.0f),
+        Vec2(750.0f,  50.0f),
+        Vec2( 50.0f, 550.0f),
+        Vec2(400.0f, 550.0f)
+        ), Color(0xff00ffff));
+    bgroup.add_curve(
+        QuadraticBezierCurve(Vec2(100, 100), Vec2(100, 200), Vec2(400, 400), 25.0f),
+        Color(0xffff00ff)
+        );
+    auto mesh = bgroup.get_cubic_mesh();
+    while (true) {
+        Renderer::clear(Color(0xffffffff));
+        // Graphics::draw_line(window, line, Color(0xa3742aff), 30);
+        // Graphics::draw_line(window, line2, Color(0x00ff00ff));
+        Graphics::draw_lines(window, bgroup, 10);
+        window->flipBuffers();
+        frames++;
+        auto now = std::chrono::steady_clock::now();
+        if (const auto elapsed = std::chrono::duration<double>(now - last).count(); elapsed >= 1.0) {
+            std::cout << "FPS: " << frames / elapsed << '\n';
+            frames = 0;
+            last = now;
+        }
+    }
+}
+
+
+[[noreturn]] void basic_test()
+{
+    auto window = Window::create(
+        "Graphics Test",
+        800,
+        600,
+        100,
+        100,
+        4,
+        5,
+        true,
+        true
+    );
+    Rectangle rect(0, 0, 400, 400);
+
+    Circle circle(
+        250.0f, 90.0f,
+        40.0f
+    );
+    RectangleGroup rectangles;
+
+    rectangles.add(
+        Rectangle(50.0f, 180.0f, 60.0f, 60.0f),
+        Color(0xff0000ff)
+    );
+    CircleGroup circles;
+
+    circles.add(
+        Circle(350.0f, 200.0f, 30.0f),
+        Color(0x00ff00ff)
+    );
+    Line line(
+        50.0f, 320.0f,
+        250.0f, 100.0f,
+        8.0f
+    );
+    LineGroup lines;
+    lines.add(
+        Line(50.0f, 450.0f, 150.0f, 40.0f, 1.0f),
+        Color(0x00ff00ff)
+    );
+    CubicBezierCurve bezier(
+        Vec2(450.0f, 350.0f),
+        Vec2(500.0f, 250.0f),
+        Vec2(650.0f, 450.0f),
+        Vec2(750.0f, 350.0f),
+        5.0f
+    );
+    auto texture = Texture2D::create();
+    texture->allocate(10, 10);
+    texture->fill(Color(0xff0000ff));
+    Rectangle texture_rect(Vec2(350.0f, 50.0f), Vec2(100.0f, 100.0f));
+    auto font = Font("C:/Windows/Fonts/arial.ttf");
+    auto text = Text("Hello", font, 24);
+    while (true)
+    {
+        Renderer::clear(Color(0xffffffff));
+        Graphics::draw(window, rect, Color(0xffff00ff));
+        Graphics::draw(window, circle, Color(0.0f, 1.0f, 0.0f, 1.0f));
+        Graphics::draw(window, texture_rect, texture);
+        Graphics::draw(window, rectangles);
+        Graphics::draw(window, circles);
+        Graphics::draw(window, text, Vec2(50.0f, 530.0f), Color(0x000000ff));
+        Graphics::draw_line(window, bezier, Color(1.0f, 0.0f, 1.0f, 1.0f), 50);
+        Graphics::draw(window, line, Color(1.0f, 0.5f, 0.0f, 1.0f));
+        Graphics::draw(window, lines);
+        Graphics::draw_line(window, line, Color(0.0f, 1.0f, 1.0f, 1.0f));
+        Graphics::draw_lines(window, lines, 3.0f);
+        window->flipBuffers();
+    }
+
+}
+
+
+
 int main() {
-    line_test();
+    bezier_test();
 }

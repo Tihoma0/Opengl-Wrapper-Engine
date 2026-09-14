@@ -59,15 +59,13 @@ std::shared_ptr<ArrayBuffer> ArrayBuffer::build(const GLuint vao) {
 
     m_stride = 0;
     for (const auto& attribute : attributes) {
-        int attrib_stride = attribute.size + attribute.offset;
-        if (attrib_stride > m_stride) {
+        if (const int attrib_stride = attribute.size + attribute.offset; attrib_stride > m_stride) {
             m_stride = attrib_stride;
         }
     }
 
-    int stride_bytes = m_stride * sizeof(float);
-    m_group_count = data.size() / m_stride;
-
+    const int stride_bytes = static_cast<int>(m_stride * sizeof(float));
+    m_group_count = static_cast<int>(data.size()) / m_stride;
     for (const auto& attribute : attributes) {
         glVertexAttribPointer(
             attribute.layout,
@@ -77,7 +75,6 @@ std::shared_ptr<ArrayBuffer> ArrayBuffer::build(const GLuint vao) {
             stride_bytes,
             reinterpret_cast<void *>(attribute.offset * sizeof(float))
         );
-
         glEnableVertexAttribArray(attribute.layout);
         glVertexAttribDivisor(attribute.layout, attribute.divisor);
     }

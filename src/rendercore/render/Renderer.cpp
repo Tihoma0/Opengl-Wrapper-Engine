@@ -23,7 +23,7 @@ void Renderer::set_target(const std::shared_ptr<RenderTarget> &target) {
     render_target = target;
 }
 
-void Renderer::draw(const std::shared_ptr<Mesh>& mesh, Material& material, const DrawOptions& options) {
+void Renderer::draw(const std::shared_ptr<Mesh>& mesh, Material& material, const DrawOptions& options = {}) {
     if (render_target)
         render_target->bind();
     material.upload();
@@ -47,7 +47,9 @@ void Renderer::draw(const std::shared_ptr<Mesh>& mesh, Material& material, const
         if (mesh->has_element_buffer())
             glDrawElements(options.m_draw_mode, vertex_count, GL_UNSIGNED_INT, reinterpret_cast<void *>(options.m_vertex_offset * sizeof(GLuint)));
         else
+        {
             glDrawArrays(options.m_draw_mode, options.m_vertex_offset, vertex_count);
+        }
     }
     else {
         if (mesh->has_element_buffer() && options.m_instance_offset != NO_VALUE)

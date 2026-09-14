@@ -9,7 +9,7 @@
 
 class RectangleGroup {
 public:
-    RectangleGroup(const std::vector<Rectangle> &rectangles, const std::vector<Color> &colors);
+    explicit RectangleGroup(const std::vector<Rectangle> &rectangles = {}, const std::vector<Color> &colors = {});
 
     void build_mesh();
 

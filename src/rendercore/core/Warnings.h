@@ -1,6 +1,10 @@
 #ifndef WARNINGS_H
 #define WARNINGS_H
 
+
+
+// #define DEBUG_MODE
+
 #include <glad/glad.h>
 
 #define THROW_RUNTIME(msg) \
