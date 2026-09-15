@@ -1043,7 +1043,8 @@ void conversion_stress_test()
         Vec2(400.0f,  50.0f),
         Vec2(750.0f,  50.0f),
         Vec2( 50.0f, 550.0f),
-        Vec2(400.0f, 550.0f)
+        Vec2(400.0f, 550.0f),
+        10
         ), Color(0xff00ffff));
     bgroup.add_curve(
         QuadraticBezierCurve(Vec2(100, 100), Vec2(100, 200), Vec2(400, 400), 25.0f),
@@ -1105,11 +1106,11 @@ void conversion_stress_test()
     );
     LineGroup lines;
     lines.add(
-        Line(50.0f, 450.0f, 150.0f, 40.0f, 1.0f),
+        Line(50.0f, 450.0f, 150.0f, 40.0f, 5.0f),
         Color(0x00ff00ff)
     );
     CubicBezierCurve bezier(
-        Vec2(450.0f, 350.0f),
+        Vec2(150.0f, 350.0f),
         Vec2(500.0f, 250.0f),
         Vec2(650.0f, 450.0f),
         Vec2(750.0f, 350.0f),

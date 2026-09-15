@@ -6,7 +6,7 @@ layout(location = 3) in vec4 color;
 
 uniform vec2 screen_size;
 
-out vec4 vcolor;
+out vec4 v_color;
 
 void main() {
     vec2 aPos;
@@ -22,5 +22,5 @@ void main() {
     vec2 ndc = aPos / screen_size * 2.0f - 1.0f;
     ndc.y = -ndc.y;
     gl_Position = vec4(ndc, 0.0, 1.0);
-    vcolor = color;
+    v_color = color;
 }

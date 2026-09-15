@@ -162,7 +162,14 @@ bool Shader::check_link() const {
     if (!success) {
         char log[1024];
         glGetProgramInfoLog(m_id, 1024, nullptr, log);
-        std::cerr << "Shader link error:\n" << log<< std::endl << " endlog" << std::endl;
+        std::cerr << "Shader link error:\n"
+            << log
+            << std::endl
+            << "\nendlog"
+            << std::endl;
+        for (auto m_source: m_sources) {
+            std::cout << "\n" << to_string(m_source.first) << "\n" << m_source.second << std::endl;
+        }
         return false;
     }
     return true;

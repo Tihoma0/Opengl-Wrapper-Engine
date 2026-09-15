@@ -61,18 +61,26 @@ void BezierGroup::build_cubic_mesh() {
                 .set_offset(6)
                 .set_divisor(1)
         );
+        std::vector<float> widths(cubic_curves.size());
+        for (int i = 0; i < cubic_colors.size() ; ++i) {
+            widths[i] = cubic_curves[i].width;
+        }
+        const ArrayBufferAttribute width_attribute = ArrayBufferAttribute(1, 4).set_divisor(1);
+        const auto width_buf = ArrayBuffer::create(widths);
+        width_buf->add_attribute(width_attribute);
 
         std::vector<float> color_data(cubic_colors.size() * 4);
         for (int i = 0; i < cubic_colors.size() ; ++i) {
-            color_data[i * 4] = cubic_colors[i].r;
-            color_data[i * 4 + 1] = cubic_colors[i].g;
-            color_data[i * 4 + 2] = cubic_colors[i].b;
-            color_data[i * 4 + 3] = cubic_colors[i].a;
+            color_data[4 * i] = cubic_colors[i].r;
+            color_data[4 * i + 1] = cubic_colors[i].g;
+            color_data[4 * i + 2] = cubic_colors[i].b;
+            color_data[4 * i + 3] = cubic_colors[i].a;
         }
-        const ArrayBufferAttribute color_attribute = ArrayBufferAttribute(4, 4).set_divisor(1);
+        const ArrayBufferAttribute color_attribute = ArrayBufferAttribute(4, 5).set_divisor(1);
         const auto color_buf = ArrayBuffer::create(color_data);
         color_buf->add_attribute(color_attribute);
         cubic_mesh->add_instance_buffer(curve_buf);
+        cubic_mesh->add_instance_buffer(width_buf);
         cubic_mesh->add_instance_buffer(color_buf);
         is_cubic_dirty = false;
     }

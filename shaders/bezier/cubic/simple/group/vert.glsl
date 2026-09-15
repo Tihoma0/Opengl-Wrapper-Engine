@@ -3,11 +3,13 @@ layout(location = 0) in vec2 control_point1;
 layout(location = 1) in vec2 control_point2;
 layout(location = 2) in vec2 control_point3;
 layout(location = 3) in vec2 control_point4;
-layout(location = 4) in vec4 color;
+layout(location = 4) in float width;
+layout(location = 5) in vec4 color;
 
 uniform vec2 screen_size;
 
 out vec4 vcolor;
+out float vwidth;
 
 void main() {
     vec2 aPos;
@@ -27,4 +29,5 @@ void main() {
     ndc.y = -ndc.y;
     gl_Position = vec4(ndc, 0.0, 1.0);
     vcolor = color;
+    vwidth = width;
 }

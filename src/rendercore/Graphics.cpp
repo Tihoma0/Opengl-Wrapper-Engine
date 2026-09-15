@@ -321,7 +321,7 @@ void Graphics::init_bezier_group() {
         ->add_file_src(ShaderStage::Vertex, "../shaders/bezier/cubic/simple/group/vert.glsl")
         ->add_file_src(ShaderStage::TessControl, "../shaders/bezier/cubic/simple/group/tess_control.glsl")
         ->add_file_src(ShaderStage::TessEval, "../shaders/bezier/cubic/simple/group/tess_eval.glsl")
-        ->add_file_src(ShaderStage::Geometry, "../shaders/bezier/cubic/simple/group/geometry.glsl")
+        // ->add_file_src(ShaderStage::Geometry, "../shaders/bezier/cubic/simple/group/geometry.glsl")
         ->add_file_src(ShaderStage::Fragment, "../shaders/bezier/cubic/simple/group/frag.glsl")
         ->compile();
     simple_cubic_bezier_group_material = std::make_unique<Material>(cubic_shader);
