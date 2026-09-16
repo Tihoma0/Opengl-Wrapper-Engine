@@ -39,6 +39,7 @@
 #include "src/rendercore/core/math/shapes/Rectangle.h"
 #include "rendercore/surface/images/ImageProcessor.h"
 #include "rendercore/text/Font.h"
+#include "rendercore/text/FontParser.h"
 #include "rendercore/text/Text.h"
 
 
@@ -933,7 +934,7 @@ void conversion_stress_test()
     int num_shapes = 400;
     std::mt19937 rng(std::random_device{}());
     std::uniform_real_distribution<float> dist(0.0f, 500.0f);
-    std::vector<Color> colors = {
+    const std::vector colors = {
         Color(0xffffffff),
         Color(0x00ffffff),
         Color(0xff00ffff),
@@ -1017,7 +1018,6 @@ void conversion_stress_test()
 
 [[noreturn]] void bezier_test() {
     const auto window = Window::create("", 700, 700);
-    auto group = LineGroup();
     const std::vector colors = {
         Color(0xff0000ff),
         Color(0xffff00ff),
@@ -1026,36 +1026,27 @@ void conversion_stress_test()
         Color(0x0000ffff),
         Color(0xff00ffff),
     };
-    for (int i = 0; i < 100; ++i) {
-        group.add(Line(i * 10.0f, 10, 10 + i * 10.0f, 400), colors[i % colors.size()]);
-    }
     CubicBezierCurve line(
         Vec2(400.0f,  50.0f),
         Vec2(750.0f,  50.0f),
         Vec2( 50.0f, 550.0f),
         Vec2(400.0f, 550.0f)
     );
-    QuadraticBezierCurve line2(Vec2(100, 100), Vec2(100, 200), Vec2(400, 400), 25.0f);
+    QuadraticBezierCurve line2(Vec2(100, 300), Vec2(100, 200), Vec2(400, 400), 25.0f);
     auto last = std::chrono::steady_clock::now();
     int frames = 0;
     BezierGroup bgroup;
-    bgroup.add_curve(CubicBezierCurve(
-        Vec2(400.0f,  50.0f),
-        Vec2(750.0f,  50.0f),
-        Vec2( 50.0f, 550.0f),
-        Vec2(400.0f, 550.0f),
-        10
-        ), Color(0xff00ffff));
+    bgroup.add_curve(CubicBezierCurve(Vec2(200, 300), Vec2(100, 400), Vec2(400, 400), Vec2(400, 400), 40), Color(0xff00ff88));
     bgroup.add_curve(
-        QuadraticBezierCurve(Vec2(100, 100), Vec2(100, 200), Vec2(400, 400), 25.0f),
-        Color(0xffff00ff)
+        QuadraticBezierCurve(Vec2(10, 100), Vec2(100, 600), Vec2(600, 100), 4),
+        Color(0xffff0088)
         );
     auto mesh = bgroup.get_cubic_mesh();
     while (true) {
         Renderer::clear(Color(0xffffffff));
-        // Graphics::draw_line(window, line, Color(0xa3742aff), 30);
-        // Graphics::draw_line(window, line2, Color(0x00ff00ff));
-        Graphics::draw_lines(window, bgroup, 10);
+        Graphics::draw(window, line, Color(0xa3742aff));
+        Graphics::draw(window, line2, Color(0x00ff00ff));
+        Graphics::draw(window, bgroup);
         window->flipBuffers();
         frames++;
         auto now = std::chrono::steady_clock::now();
@@ -1131,7 +1122,7 @@ void conversion_stress_test()
         Graphics::draw(window, rectangles);
         Graphics::draw(window, circles);
         Graphics::draw(window, text, Vec2(50.0f, 530.0f), Color(0x000000ff));
-        Graphics::draw_line(window, bezier, Color(1.0f, 0.0f, 1.0f, 1.0f), 50);
+        Graphics::draw(window, bezier, Color(1.0f, 0.0f, 1.0f, 1.0f), 50);
         Graphics::draw(window, line, Color(1.0f, 0.5f, 0.0f, 1.0f));
         Graphics::draw(window, lines);
         Graphics::draw_line(window, line, Color(0.0f, 1.0f, 1.0f, 1.0f));
@@ -1142,7 +1133,10 @@ void conversion_stress_test()
 }
 
 
+void parser_test() {
+    FontParser::parse("../arial.ttf");
+}
 
 int main() {
-    bezier_test();
+    parser_test();
 }

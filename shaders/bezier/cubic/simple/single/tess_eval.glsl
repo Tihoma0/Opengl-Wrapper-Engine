@@ -1,10 +1,14 @@
 #version 450 core
 
-layout(isolines) in;
+layout(quads, equal_spacing) in;
+
+uniform vec2 screen_size;
+uniform float width;
 
 void main()
 {
-    float t = gl_TessCoord.x;
+    float v = gl_TessCoord.x;
+    float t = gl_TessCoord.y;
 
     vec2 p0 = gl_in[0].gl_Position.xy;
     vec2 p1 = gl_in[1].gl_Position.xy;
@@ -20,5 +24,15 @@ void main()
     + p2 * (3 * t * u * u)
     + p3 * (u * u * u);
 
-    gl_Position = vec4(position, 0.0, 1.0);
+    vec2 tangent =
+    p0 * (3.0 * t * t)
+    + p1 * (6.0 * t * u - 3.0 * t * t)
+    + p2 * (3.0 * u * u - 6.0 * t * u)
+    - p3 * (3.0 * u * u);
+    vec2 dir = normalize(tangent);
+    vec2 perpendicular = vec2(-dir.y, dir.x);
+    float offset_side = (v - 0.5) * 2;
+    vec2 current_width = width / screen_size;
+
+    gl_Position = vec4(position + (perpendicular * offset_side) * current_width, 0.0, 1.0);
 }

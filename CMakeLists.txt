@@ -46,6 +46,12 @@ add_library(engine ${ENGINE_SRC}
         "src/ util/Path.h"
         src/rendercore/core/math/shapes/BezierGroup.cpp
         src/rendercore/core/math/shapes/BezierGroup.h
+        src/rendercore/text/FontParser.cpp
+        src/rendercore/text/FontParser.h
+        src/rendercore/text/BinReader.cpp
+        src/rendercore/text/BinReader.h
+        src/rendercore/text/Tables.cpp
+        src/rendercore/text/Tables.h
 )
 
 add_executable(GLWrapper_II main.cpp)

@@ -1,13 +1,18 @@
 #version 450 core
 
-layout(isolines) in;
+layout(quads, equal_spacing) in;
 
 in vec4 tc_color[];
+in float tc_width[];
 out vec4 fcolor;
+
+uniform vec2 screen_size;
+
 
 void main()
 {
-    float t = gl_TessCoord.x;
+    float v = gl_TessCoord.x;
+    float t = gl_TessCoord.y;
 
     vec2 p0 = gl_in[0].gl_Position.xy;
     vec2 p1 = gl_in[1].gl_Position.xy;
@@ -19,6 +24,13 @@ void main()
     p0 * (u * u) +
     p1 * (2.0f * u * t) +
     p2 * (t * t);
-    gl_Position = vec4(position, 0.0, 1.0);
+    vec2 tangens =
+    p0 * (-2.0f * u) +
+    p1 * (2.0f * u - 2.0f * t) +
+    p2 * (2.0f * t);
+
+    vec2 perpendicular = normalize(vec2(-tangens.y, tangens.x));
+    vec2 offset = (v - 0.5) * 2 * tc_width[0] * perpendicular / screen_size;
+    gl_Position = vec4(position + offset, 0.0, 1.0);
     fcolor = tc_color[0];
 }

@@ -45,13 +45,10 @@ namespace Graphics {
     void draw(const std::shared_ptr<RenderTarget> &target, CircleGroup &circles);
 
     void draw(const std::shared_ptr<RenderTarget> &target, const Text &text, const Vec2 &pos, const Color &color);
+    
+    void draw(const std::shared_ptr<RenderTarget> &target, BezierCurve &curve, const Color &color, int num_segments = 10);
 
-
-
-
-    void draw_line(const std::shared_ptr<RenderTarget> &target, BezierCurve &curve, const Color &color, int num_segments = 10);
-
-    void draw_lines(const std::shared_ptr<RenderTarget> &target, BezierGroup &group, int num_segments = 10);
+    void draw(const std::shared_ptr<RenderTarget> &target, BezierGroup &group, int num_segments = 10);
 
     void draw(const std::shared_ptr<RenderTarget> &target, const Line &line, const Color &color);
 

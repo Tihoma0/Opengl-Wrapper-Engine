@@ -33,11 +33,8 @@ void main()
         - p3 * (3.0 * u * u);
     vec2 dir = normalize(tangent);
     vec2 perpendicular = vec2(-dir.y, dir.x);
-    float offset_side = v - 0.5;
-    vec2 current_width = tc_width[0] / screen_size;
+    vec2 offset = (v - 0.5) * 2 * tc_width[0] / screen_size;
 
-    vec2 final_position = position + (perpendicular * offset_side) * current_width;
-
-    gl_Position = vec4(final_position, 0.0, 1.0);
+    gl_Position = vec4(position + offset, 0.0, 1.0);
     fcolor = tc_color[0];
 }

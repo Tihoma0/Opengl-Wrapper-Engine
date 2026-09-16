@@ -91,7 +91,7 @@ void Graphics::draw(const std::shared_ptr<RenderTarget> &target, const Text &tex
     text.draw(target, pos, color);
 }
 
-void Graphics::draw_line(const std::shared_ptr<RenderTarget> &target, BezierCurve &curve, const Color &color, const int num_segments) {
+void Graphics::draw(const std::shared_ptr<RenderTarget> &target, BezierCurve &curve, const Color &color, const int num_segments) {
     glLineWidth(curve.get_width());
     init_bezier();
     Renderer::set_target(target);
@@ -105,17 +105,19 @@ void Graphics::draw_line(const std::shared_ptr<RenderTarget> &target, BezierCurv
         simple_cubic_bezier_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
         simple_cubic_bezier_material->set_uniform("color", Vec4(color));
         simple_cubic_bezier_material->set_uniform("num_segments", num_segments);
+        simple_cubic_bezier_material->set_uniform("width", curve.get_width());
         Renderer::draw(mesh, *simple_cubic_bezier_material, DrawOptions(GL_PATCHES));
     }
     else {
         simple_quadratic_bezier_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
         simple_quadratic_bezier_material->set_uniform("color", Vec4(color));
         simple_quadratic_bezier_material->set_uniform("num_segments", num_segments);
+        simple_quadratic_bezier_material->set_uniform("width", curve.get_width());
         Renderer::draw(mesh, *simple_quadratic_bezier_material, DrawOptions(GL_PATCHES));
     }
 }
 
-void Graphics::draw_lines(const std::shared_ptr<RenderTarget> &target, BezierGroup &group, int num_segments) {
+void Graphics::draw(const std::shared_ptr<RenderTarget> &target, BezierGroup &group, int num_segments) {
     glLineWidth(10);
     init_bezier_group();
     Renderer::set_target(target);
@@ -321,7 +323,6 @@ void Graphics::init_bezier_group() {
         ->add_file_src(ShaderStage::Vertex, "../shaders/bezier/cubic/simple/group/vert.glsl")
         ->add_file_src(ShaderStage::TessControl, "../shaders/bezier/cubic/simple/group/tess_control.glsl")
         ->add_file_src(ShaderStage::TessEval, "../shaders/bezier/cubic/simple/group/tess_eval.glsl")
-        // ->add_file_src(ShaderStage::Geometry, "../shaders/bezier/cubic/simple/group/geometry.glsl")
         ->add_file_src(ShaderStage::Fragment, "../shaders/bezier/cubic/simple/group/frag.glsl")
         ->compile();
     simple_cubic_bezier_group_material = std::make_unique<Material>(cubic_shader);

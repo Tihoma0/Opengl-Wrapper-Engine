@@ -9,7 +9,14 @@ void main()
 
     if (gl_InvocationID == 0)
     {
-        gl_TessLevelOuter[0] = 1.0f;
-        gl_TessLevelOuter[1] = float(num_segments);
+        float segments_along_length = float(num_segments);
+
+        gl_TessLevelOuter[0] = segments_along_length;
+        gl_TessLevelOuter[2] = segments_along_length;
+
+        gl_TessLevelOuter[1] = 1.0f;
+        gl_TessLevelOuter[3] = 1.0f;
+        gl_TessLevelInner[0] = 1.0f;
+        gl_TessLevelInner[1] = segments_along_length;
     }
 }

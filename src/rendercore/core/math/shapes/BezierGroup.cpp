@@ -116,6 +116,13 @@ void BezierGroup::build_quadratic_mesh() {
                 .set_offset(4)
                 .set_divisor(1)
         );
+        std::vector<float> widths(quadratic_curves.size());
+        for (int i = 0; i < quadratic_curves.size() ; ++i) {
+            widths[i] = quadratic_curves[i].width;
+        }
+        const ArrayBufferAttribute width_attribute = ArrayBufferAttribute(1, 3).set_divisor(1);
+        const auto width_buf = ArrayBuffer::create(widths);
+        width_buf->add_attribute(width_attribute);
         std::vector<float> color_data(quadratic_colors.size() * 4);
         for (int i = 0; i < quadratic_colors.size() ; ++i) {
             color_data[i * 4] = quadratic_colors[i].r;
@@ -123,10 +130,11 @@ void BezierGroup::build_quadratic_mesh() {
             color_data[i * 4 + 2] = quadratic_colors[i].b;
             color_data[i * 4 + 3] = quadratic_colors[i].a;
         }
-        const ArrayBufferAttribute color_attribute = ArrayBufferAttribute(4, 3).set_divisor(1);
+        const ArrayBufferAttribute color_attribute = ArrayBufferAttribute(4, 4).set_divisor(1);
         const auto color_buf = ArrayBuffer::create(color_data);
         color_buf->add_attribute(color_attribute);
         quadratic_mesh->add_instance_buffer(curve_buf);
+        quadratic_mesh->add_instance_buffer(width_buf);
         quadratic_mesh->add_instance_buffer(color_buf);
         is_quadratic_dirty = false;
     }
