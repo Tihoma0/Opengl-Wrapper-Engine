@@ -2,6 +2,7 @@
 #define GLWRAPPER_II_BINREADER_H
 #include <cstdint>
 #include <iosfwd>
+#include <vector>
 
 
 namespace BinReader {
@@ -14,6 +15,7 @@ namespace BinReader {
     uint16_t read_short(std::ifstream& stream);
     uint32_t read_int(std::ifstream& stream);
     uint64_t read_long(std::ifstream& stream);
+    std::vector<uint16_t> read_short_array(std::ifstream& stream, uint32_t size);
 };
 
 

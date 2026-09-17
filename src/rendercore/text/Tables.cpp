@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iosfwd>
+#include <iostream>
 
 #include "BinReader.h"
 
@@ -101,10 +102,59 @@ std::vector<uint32_t> Tables::parse_loca_table(std::ifstream &stream, const uint
     return result;
 }
 
-void Tables::parse_cmap_header(std::ifstream &stream, const uint32_t offset) {
+Tables::CmapHeader Tables::parse_cmap_header(std::ifstream &stream, const uint32_t offset) {
     stream.seekg(offset, std::ios::beg);
-
+    CmapHeader result{};
+    stream.read(reinterpret_cast<char*>(&result), sizeof(CmapHeader));
+    result.numSubtables = BinReader::convert_short(result.numSubtables);
+    result.version = BinReader::convert_short(result.version);
+    return result;
 }
+
+Tables::CmapSubtableHeader Tables::parse_cmap_subtable_header(std::ifstream &stream) {
+    CmapSubtableHeader result{};
+    stream.read(reinterpret_cast<char*>(&result), sizeof(CmapSubtableHeader));
+
+    result.platformID = BinReader::convert_short(result.platformID);
+    result.encodingID = BinReader::convert_short(result.encodingID);
+    result.offset     = BinReader::convert_int(result.offset);
+
+    return result;
+}
+
+uint32_t Tables::find_unicode_subtable_offset(std::ifstream &stream, const uint32_t cmap_start_offset, const uint16_t numSubtables) {
+    for (int i = 0; i < numSubtables; ++i) {
+        if (auto [platformID, encodingID, offset] = parse_cmap_subtable_header(stream);(platformID == 3 && encodingID == 1) || platformID == 0)
+            return cmap_start_offset + offset;
+    }
+    return 0;
+}
+
+Tables::CmapFormat4Header Tables::parse_cmap_format4_header(std::ifstream &stream) {
+    CmapFormat4Header result{};
+    stream.read(reinterpret_cast<char*>(&result), sizeof(CmapFormat4Header));
+    result.length        = BinReader::convert_short(result.length);
+    result.language      = BinReader::convert_short(result.language);
+    result.segCountX2    = BinReader::convert_short(result.segCountX2);
+    result.searchRange   = BinReader::convert_short(result.searchRange);
+    result.entrySelector = BinReader::convert_short(result.entrySelector);
+    result.rangeShift    = BinReader::convert_short(result.rangeShift);
+    return result;
+}
+
+Tables::CmapFormat4Data Tables::read_cmap_format4_data(std::ifstream &stream) {
+    const auto map_header = parse_cmap_format4_header(stream);
+    std::cout << map_header << std::endl;
+    CmapFormat4Data result;
+    result.endCodes = BinReader::read_short_array(stream, map_header.segCountX2 / 2);
+    stream.ignore(2);
+    result.startCodes = BinReader::read_short_array(stream, map_header.segCountX2 / 2);
+    result.idDeltas = BinReader::read_short_array(stream, map_header.segCountX2 / 2);
+    result.idRangeOffsets = BinReader::read_short_array(stream, map_header.segCountX2 / 2);
+    result.glyphIdArrayOffset = stream.tellg();
+    return result;
+}
+
 
 std::ostream & Tables::operator<<(std::ostream &os, const FontHeader &header) {
     os << "=== Font Header ===\n"
@@ -115,7 +165,6 @@ std::ostream & Tables::operator<<(std::ostream &os, const FontHeader &header) {
             << "  Range Shift:    " << header.rangeShift << "\n";
     return os;
 }
-
 
 std::ostream & Tables::operator<<(std::ostream &os, const TableInfo &table) {
     os << "=== Table Info: ";
@@ -129,8 +178,7 @@ std::ostream & Tables::operator<<(std::ostream &os, const TableInfo &table) {
     return os;
 }
 
-
-std::ostream& Tables::operator<<(std::ostream& os, const Tables::HeadTable& table) {
+std::ostream& Tables::operator<<(std::ostream& os, const HeadTable& table) {
     os << "=== Head Table (Font Header) ===\n"
             << "  Version:        " << table.majorVersion << "." << table.minorVersion << "\n"
             << "  Font Revision:  0x" << std::hex << std::setw(8) << std::setfill('0') << table.fontRevision << std::dec << "\n"
@@ -157,3 +205,14 @@ std::ostream& Tables::operator<<(std::ostream& os, const MaxpTable& table) {
     return os;
 }
 
+std::ostream& Tables::operator<<(std::ostream& os, const CmapFormat4Header& header) {
+    os << "=== Cmap Subtable Header (Format 4) ===\n"
+       << "  Format:         4 (Segment Mapping for BMP)\n"
+       << "  Subtable Length:" << header.length << " Bytes\n"
+       << "  Language ID:    " << header.language << "\n"
+       << "  Segment Count:  " << (header.segCountX2 / 2) << " (Raw segCountX2: " << header.segCountX2 << ")\n"
+       << "  Search Range:   " << header.searchRange << "\n"
+       << "  Entry Selector: " << header.entrySelector << "\n"
+       << "  Range Shift:    " << header.rangeShift << "\n";
+    return os;
+}

@@ -23,4 +23,22 @@ void FontParser::parse(std::string path) {
     file.seekg(tables["maxp"].offset, std::ios::beg);
     auto maxp_table = Tables::parse_maxp_table(file);
     std::cout << maxp_table << std::endl;
+
+    auto cmapHeader = Tables::parse_cmap_header(file, tables["cmap"].offset);
+    auto globalSubtableOffset = Tables::find_unicode_subtable_offset(file, tables["cmap"].offset, cmapHeader.numSubtables);
+
+    if (globalSubtableOffset != 0) {
+        file.seekg(globalSubtableOffset, std::ios::beg);
+
+        uint16_t format = 0;
+        file.read(reinterpret_cast<char*>(&format), sizeof(format));
+        format = BinReader::convert_short(format);
+
+        std::cout << "Unicode-Subtabelle gefunden bei Offset: " << globalSubtableOffset << "\n";
+        std::cout << "Cmap Datenformat: Format " << format << "\n";
+
+        auto map_data = Tables::read_cmap_format4_data(file);
+    } else {
+        std::cerr << "Kritischer Fehler: Keine unterstützte Unicode-cmap-Tabelle gefunden!\n";
+    }
 }

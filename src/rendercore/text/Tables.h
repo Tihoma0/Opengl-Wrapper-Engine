@@ -75,7 +75,24 @@ namespace Tables {
         uint16_t numSubtables;
     };
 
+    struct CmapFormat4Header {
+        uint16_t length;
+        uint16_t language;
+        uint16_t segCountX2;
+        uint16_t searchRange;
+        uint16_t entrySelector;
+        uint16_t rangeShift;
+    };
+
 #pragma pack(pop)
+
+    struct CmapFormat4Data {
+        std::vector<uint16_t> endCodes;
+        std::vector<uint16_t> startCodes;
+        std::vector<uint16_t> idDeltas;
+        std::vector<uint16_t> idRangeOffsets;
+        int glyphIdArrayOffset;
+    };
 
     FontHeader parse_header(std::ifstream& stream);
 
@@ -89,12 +106,22 @@ namespace Tables {
 
     std::vector<uint32_t> parse_loca_table(std::ifstream& stream, uint32_t offset, uint16_t numGlyphs);
 
-    void parse_cmap_header(std::ifstream& stream, uint32_t offset);
+    CmapHeader parse_cmap_header(std::ifstream& stream, uint32_t offset);
+
+    CmapSubtableHeader parse_cmap_subtable_header(std::ifstream& stream);
+
+    uint32_t find_unicode_subtable_offset(std::ifstream &stream, uint32_t cmap_start_offset, uint16_t numSubtables);
+
+    CmapFormat4Header parse_cmap_format4_header(std::ifstream &stream);
+
+    CmapFormat4Data read_cmap_format4_data(std::ifstream& stream);
+
 
     std::ostream& operator<<(std::ostream& os, const FontHeader& header);
     std::ostream& operator<<(std::ostream& os, const TableInfo& table);
     std::ostream& operator<<(std::ostream& os, const HeadTable& table);
     std::ostream& operator<<(std::ostream& os, const MaxpTable& table);
+    std::ostream& operator<<(std::ostream& os, const CmapFormat4Header& header);
 
 };
 

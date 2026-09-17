@@ -49,3 +49,12 @@ uint64_t BinReader::read_long(std::ifstream &stream) {
     stream.read(reinterpret_cast<char*>(&out), 8);
     return convert_long(out);
 }
+
+std::vector<uint16_t> BinReader::read_short_array(std::ifstream &stream, const uint32_t size) {
+    std::vector<uint16_t> result(size);
+    stream.read(reinterpret_cast<char*>(result.data()), size * 2);
+    for (uint32_t i = 0; i < size; ++i) {
+        result[i] = convert_short(result[i]);
+    }
+    return result;
+}
