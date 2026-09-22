@@ -44,6 +44,8 @@ file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS
 add_library(engine ${ENGINE_SRC}
         "src/ util/Path.cpp"
         "src/ util/Path.h"
+        src/rendercore/core/math/shapes/Polygon.cpp
+        src/rendercore/core/math/shapes/Polygon.h
 )
 
 add_executable(GLWrapper_II main.cpp)
