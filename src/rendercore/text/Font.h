@@ -2,23 +2,48 @@
 #ifndef FONT_H
 #define FONT_H
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 
+#include "FontParser.h"
 #include " util/Path.h"
 #include "freetype/freetype.h"
 #include "rendercore/material/Material.h"
 #include "rendercore/render/RenderTarget.h"
 #include "rendercore/surface/textures/TextureAtlas.h"
 
+
+class Font {
+public:
+    Font(const Path &path);
+    FontParser::GlyphOutline get_outline(char32_t glyph);
+
+private:
+    FontParser::FontHeader header = {};
+    std::unordered_map<std::string, FontParser::TableInfo> tables;
+    FontParser::HeadTable head_table = {};
+    FontParser::MaxpTable maxp_table = {};
+    std::vector<uint32_t> loca;
+    FontParser::CmapHeader cmap_header = {};
+    uint32_t format4_offset;
+    FontParser::CmapFormat4Header cmap_format4_header = {};
+    FontParser::CmapFormat4Data cmap_format4_glyph_ids;
+    std::ifstream font_file;
+
+    std::unordered_map<char32_t, FontParser::GlyphOutline> outlines;
+
+};
+
+
 struct Bitmap {
     std::vector<uint8_t> buf;
     int width;
     int height;
 };
-class Font {
+class BitmapFont {
 public:
-    explicit Font(const Path &path, int default_character_size = 128);
+    explicit BitmapFont(const Path &path, int default_character_size = 128);
 
     [[nodiscard]] Bitmap get_bitmap(char ch) const;
 

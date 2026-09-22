@@ -10,7 +10,7 @@ class BezierGroup {
 public:
     explicit BezierGroup(const std::vector<Bezier> &curves = {}, const std::vector<Color> &colors = {});
 
-    void add_curve(const Bezier &curve, const Color &color);
+    void add(const Bezier &curve, const Color &color);
 
     void build_cubic_mesh();
     void build_quadratic_mesh();

@@ -47,7 +47,7 @@ public:
     Vec2 p1, p2, p3;
     std::shared_ptr<Mesh> mesh;
 
-    QuadraticBezierCurve(const Vec2& p1, const Vec2& p2, const Vec2& p3, const float width = 1.0f) : width(width), p1(p1), p2(p2), p3(p3) {}
+    QuadraticBezierCurve(const Vec2& p1, const Vec2& p2, const Vec2& p3, const float width = 2.0f) : width(width), p1(p1), p2(p2), p3(p3) {}
 
     [[nodiscard]] Vec2 evaluate(float t) const override;
 

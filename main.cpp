@@ -962,7 +962,7 @@ void conversion_stress_test()
 
 [[noreturn]] void textTest() {
     auto window = Window::create("", 500, 500);
-    Font font = Font("C:/Windows/Fonts/times.ttf", 125);
+    BitmapFont font = BitmapFont("C:/Windows/Fonts/times.ttf", 125);
     Text text = Text("Hello World Im here!,.1234567890sdg bcns", font, 48);
     auto last = std::chrono::steady_clock::now();
     int frames = 0;
@@ -1036,8 +1036,8 @@ void conversion_stress_test()
     auto last = std::chrono::steady_clock::now();
     int frames = 0;
     BezierGroup bgroup;
-    bgroup.add_curve(CubicBezierCurve(Vec2(200, 300), Vec2(100, 400), Vec2(400, 400), Vec2(400, 400), 40), Color(0xff00ff88));
-    bgroup.add_curve(
+    bgroup.add(CubicBezierCurve(Vec2(200, 300), Vec2(100, 400), Vec2(400, 400), Vec2(400, 400), 40), Color(0xff00ff88));
+    bgroup.add(
         QuadraticBezierCurve(Vec2(10, 100), Vec2(100, 600), Vec2(600, 100), 4),
         Color(0xffff0088)
         );
@@ -1111,7 +1111,7 @@ void conversion_stress_test()
     texture->allocate(10, 10);
     texture->fill(Color(0xff0000ff));
     Rectangle texture_rect(Vec2(350.0f, 50.0f), Vec2(100.0f, 100.0f));
-    auto font = Font("C:/Windows/Fonts/arial.ttf");
+    auto font = BitmapFont("C:/Windows/Fonts/arial.ttf");
     auto text = Text("Hello", font, 24);
     while (true)
     {
@@ -1134,7 +1134,25 @@ void conversion_stress_test()
 
 
 void parser_test() {
-    FontParser::parse("../arial.ttf");
+    auto st = std::chrono::high_resolution_clock::now();
+    auto window = Window::create("", 1000, 500);
+    std::cout << "Window creation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count() << " ms" << std::endl;
+    st = std::chrono::high_resolution_clock::now();
+    auto font = Font("C:/Windows/Fonts/arial.ttf");
+    std::cout << "Font loading time: " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - st).count() << " mcs" << std::endl;
+    st = std::chrono::high_resolution_clock::now();
+    auto outline = font.get_outline('A');
+    std::cout << "get A time: " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - st).count() << " mcs" << std::endl;
+    while (true) {
+        Renderer::clear(Color(0xffffffff));
+        for (int i = 0; i < outline.curves.size(); ++i) {
+            Graphics::draw(window, outline.curves[i], Color(0xff0000ff));
+        }
+        for (const auto& line : outline.lines) {
+            Graphics::draw(window, line, Color(0xff0000ff));
+        }
+        window->flipBuffers();
+    }
 }
 
 int main() {

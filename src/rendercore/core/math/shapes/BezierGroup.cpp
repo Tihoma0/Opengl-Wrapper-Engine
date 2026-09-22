@@ -8,11 +8,11 @@
 
 BezierGroup::BezierGroup(const std::vector<Bezier> &curves, const std::vector<Color> &colors) {
     for (const auto &curve : curves) {
-        add_curve(curve, colors[0]);
+        add(curve, colors[0]);
     }
 }
 
-void BezierGroup::add_curve(const Bezier &curve, const Color &color) {
+void BezierGroup::add(const Bezier &curve, const Color &color) {
     std::visit([&]<typename T>(const T& c) {
         using Type = std::decay_t<T>;
         if constexpr (std::is_same_v<Type, CubicBezierCurve>) {

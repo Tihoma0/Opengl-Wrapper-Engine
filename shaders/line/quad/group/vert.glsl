@@ -16,5 +16,5 @@ void main() {
     vec2 ndc_position = position / screen_size * 2 - 1.0f;
     ndc_position.y = - ndc_position.y;
     fcolor = color;
-    gl_Position = vec4(ndc_position, 0.0, 1.0);
+    gl_Position = vec4(ndc_position / 5.0f, 0.0, 1.0);
 }

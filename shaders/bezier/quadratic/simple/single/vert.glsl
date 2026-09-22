@@ -8,7 +8,7 @@ void main() {
     vec2 ndc = aPos / screen_size * 2.0f - 1.0f;
     ndc.y = -ndc.y;
 
-    gl_Position = vec4(ndc, 0.0, 1.0);
+    gl_Position = vec4(ndc / 5.0f, 0.0, 1.0);
 
 
 }

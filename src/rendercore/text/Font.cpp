@@ -11,13 +11,54 @@
 #include "rendercore/render/Renderer.h"
 #include "rendercore/surface/Color.h"
 #include "rendercore/core/enums/mesh/DrawOptions.h"
+#include "rendercore/core/math/shapes/BezierCurve.h"
+#include "rendercore/core/math/shapes/Line.h"
 #include "rendercore/surface/textures/Sampler.h"
 
-thread_local FT_Library Font::lib;
-thread_local std::shared_ptr<Mesh> Font::quad;
-thread_local std::unique_ptr<Material> Font::material;
+thread_local FT_Library BitmapFont::lib;
+thread_local std::shared_ptr<Mesh> BitmapFont::quad;
+thread_local std::unique_ptr<Material> BitmapFont::material;
 
-Font::Font(const Path &path, int default_character_size) {
+Font::Font(const Path &path) {
+    font_file = std::ifstream(path.filesystem_path(), std::ios::binary);
+    if (!font_file) {
+        THROW_RUNTIME("Error when opening " + path.string());
+    }
+    using namespace FontParser;
+    font_file.seekg(0, std::ios::beg);
+    header = parse_header(font_file);
+    tables = parse_tables(font_file, header.numTables);
+    head_table = parse_head_table(font_file);
+    font_file.seekg(tables["maxp"].offset, std::ios::beg);
+    maxp_table = parse_maxp_table(font_file);
+    loca = parse_loca_table(font_file, tables["loca"].offset, maxp_table.numGlyphs);
+    cmap_header = parse_cmap_header(font_file, tables["cmap"].offset);
+    format4_offset = find_unicode_subtable_offset(font_file, tables["cmap"].offset, cmap_header.numSubtables);
+    if (format4_offset == 0) {
+        THROW_RUNTIME("No unicode subtable found");
+    }
+    font_file.seekg(format4_offset, std::ios::beg);
+    cmap_format4_glyph_ids = read_cmap_format4_data(font_file);
+}
+
+FontParser::GlyphOutline Font::get_outline(const char32_t glyph) {
+    if (outlines.contains(glyph))
+        return outlines[glyph];
+    using namespace FontParser;
+    const auto glyph_pos = get_glyph_id(font_file, cmap_format4_glyph_ids, glyph);
+    const auto start_pos = loca[glyph_pos];
+    const auto end_pos = loca[glyph_pos + 1];
+    font_file.seekg(start_pos + tables["glyf"].offset, std::ios::beg);
+    const auto glyph_header = parse_glyph_header(font_file);
+    if (glyph_header.numberOfContours <= 0)
+        return {};
+    const auto glyph_data = get_glyph_points(font_file, glyph_header);
+    auto outline = points_to_outline(glyph_data);
+    outlines[glyph] = outline;
+    return outline;
+}
+
+BitmapFont::BitmapFont(const Path &path, int default_character_size) {
     init();
     const FT_Error error = FT_New_Face(
         lib,
@@ -34,7 +75,7 @@ Font::Font(const Path &path, int default_character_size) {
     }
 }
 
-Bitmap Font::get_bitmap(const char ch) const {
+Bitmap BitmapFont::get_bitmap(const char ch) const {
     FT_Set_Pixel_Sizes(face, 0, default_character_size);
     if (FT_Load_Char(face, ch, FT_LOAD_RENDER))
         std::cerr << "Failed to load glyph" << std::endl;
@@ -48,7 +89,7 @@ Bitmap Font::get_bitmap(const char ch) const {
     return b;
 }
 
-void Font::draw(const std::shared_ptr<RenderTarget> &target, const std::string &text, const Vec2 pos, const int size, const Color color) {
+void BitmapFont::draw(const std::shared_ptr<RenderTarget> &target, const std::string &text, const Vec2 pos, const int size, const Color color) {
     target->bind();
     material->set_uniform("screen_size", Vec2(target->width(), target->height()));
     material->set_texture("tex", atlas);
@@ -73,7 +114,7 @@ void Font::draw(const std::shared_ptr<RenderTarget> &target, const std::string &
     }
 }
 
-void Font::init() {
+void BitmapFont::init() {
     if (!is_init) {
         if (FT_Init_FreeType(&lib)) {
             THROW_RUNTIME("Failed to initialize FreeType");

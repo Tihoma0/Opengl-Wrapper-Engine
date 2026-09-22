@@ -7,10 +7,10 @@
 class Text {
 public:
     std::string text;
-    Font& font;
+    BitmapFont& font;
     int size;
 
-    Text(std::string text, Font &font, const int size) : text(std::move(text)), font(font), size(size) {}
+    Text(std::string text, BitmapFont &font, const int size) : text(std::move(text)), font(font), size(size) {}
 
     void draw(const std::shared_ptr<RenderTarget> &target, const Vec2 &pos, const Color &color) const;
 };
