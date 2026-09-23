@@ -9,20 +9,29 @@
 
 class Mesh;
 
-struct PolygonContour {
+struct OuterPolygonContour {
+    std::vector<Line> lines = {};
+};
+
+struct InnerPolygonContour {
     std::vector<Line> lines = {};
 };
 
 
 class Polygon {
 public:
-    Polygon(const std::vector<PolygonContour> &contours = {});
-     
+    Polygon(const OuterPolygonContour &outer_contours,
+    const std::vector<InnerPolygonContour> &inner_polygon_contours) :
+    outer_contours(outer_contours),
+    inner_polygon_contours(inner_polygon_contours) {}
+
     void build_mesh();
     std::shared_ptr<Mesh> get_mesh();
 private:
-    std::vector<PolygonContour> contours;
+    const OuterPolygonContour& outer_contours;
+    const std::vector<InnerPolygonContour>& inner_polygon_contours;
     std::shared_ptr<Mesh> mesh;
+    OuterPolygonContour generate_bridged_contour();
 };
 
 

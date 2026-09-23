@@ -1,5 +1,6 @@
 #ifndef VEC2_H
 #define VEC2_H
+#include <cmath>
 #include <string>
 
 class Color;
@@ -8,7 +9,7 @@ class Vec2 {
 public:
     union {
         struct { float x, y; };
-        float m[2];
+        float vert[2];
         struct { float r, g; };
     };
 
@@ -38,6 +39,13 @@ public:
 
     [[nodiscard]] float distance2(const Vec2& other) const;
     [[nodiscard]] float distance(const Vec2& other) const;
+
+    [[nodiscard]] float m() const {
+        constexpr float epsilon = 1e-6f;
+        if (std::abs(x) < epsilon)
+            return (y / epsilon) * (std::signbit(x) ? 1.0f : -1.0f);
+        return y / x;
+    }
 
     [[nodiscard]] std::string to_string() const {
         return "(" +
