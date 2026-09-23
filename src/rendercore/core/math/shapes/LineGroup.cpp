@@ -33,7 +33,7 @@ void LineGroup::build_line_mesh() {
     for (int i = 0; i < lines.size(); ++i) {
         data[i*4] = lines[i].x1;
         data[i*4 + 1] = lines[i].y1;
-        const auto vector = lines[i].vector();
+        const auto vector = lines[i].along();
         data[i*4 + 2] = vector.x;
         data[i*4 + 3] = vector.y;
     }
@@ -63,7 +63,7 @@ void LineGroup::build_quad_mesh() {
     for (int i = 0; i < lines.size(); ++i) {
         data[i*4] = lines[i].x1;
         data[i*4 + 1] = lines[i].y1;
-        const auto normal = lines[i].vector().normalize();
+        const auto normal = lines[i].along().normalize();
         data[i*4 + 2] = normal.x;
         data[i*4 + 3] = normal.y;
     }
@@ -72,7 +72,7 @@ void LineGroup::build_quad_mesh() {
     buf->add_attribute(attribute);
     std::vector<float> size_data(lines.size() * 2);
     for (int i = 0; i < lines.size(); ++i) {
-        size_data[i*2] = lines[i].vector().length();
+        size_data[i*2] = lines[i].along().length();
         size_data[i*2 + 1] = lines[i].width;
     }
     const std::shared_ptr<ArrayBuffer> size_buf = ArrayBuffer::create(size_data);

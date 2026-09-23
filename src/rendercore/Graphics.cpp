@@ -147,7 +147,7 @@ void Graphics::draw(const std::shared_ptr<RenderTarget> &target, const Line &lin
     Renderer::set_target(target);
     line_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
     line_material->set_uniform("start", line.start());
-    const auto vec = line.vector();
+    const auto vec = line.along();
     line_material->set_uniform("normal", vec.normalize());
     line_material->set_uniform("length", vec.length());
     line_material->set_uniform("width", line.width);
@@ -162,7 +162,7 @@ void Graphics::draw_line(const std::shared_ptr<RenderTarget> &target, const Line
     glLineWidth(line.width);
     simple_line_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
     simple_line_material->set_uniform("start", line.start());
-    simple_line_material->set_uniform("vector", line.vector());
+    simple_line_material->set_uniform("vector", line.along());
     simple_line_material->set_uniform("color", Vec4(color));
     Renderer::draw(simple_line, *simple_line_material, DrawOptions(GL_LINES));
 
