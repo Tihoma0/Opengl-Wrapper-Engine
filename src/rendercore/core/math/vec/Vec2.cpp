@@ -69,6 +69,10 @@ float Vec2::dot(const Vec2& other) const {
     return x * other.x + y * other.y;
 }
 
+float Vec2::cross(const Vec2 &other) const {
+    return x * other.y - y * other.x;
+}
+
 float Vec2::distance2(const Vec2& other) const {
     const float dx = x - other.x;
     const float dy = y - other.y;

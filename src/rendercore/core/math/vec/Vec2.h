@@ -36,6 +36,7 @@ public:
     [[nodiscard]] Vec2 normalize() const;
 
     [[nodiscard]] float dot(const Vec2& other) const;
+    [[nodiscard]] float cross(const Vec2& other) const;
 
     [[nodiscard]] float distance2(const Vec2& other) const;
     [[nodiscard]] float distance(const Vec2& other) const;
