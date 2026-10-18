@@ -35,6 +35,7 @@
 #include "rendercore/core/math/shapes/BezierGroup.h"
 #include "rendercore/core/math/shapes/Line.h"
 #include "rendercore/core/math/shapes/LineGroup.h"
+#include "rendercore/core/math/shapes/StaticPolygon.h"
 #include "rendercore/core/math/shapes/RectangleGroup.h"
 #include "src/rendercore/core/math/shapes/Rectangle.h"
 #include "rendercore/surface/images/ImageProcessor.h"
@@ -1135,7 +1136,7 @@ void conversion_stress_test()
 
 void parser_test() {
     auto st = std::chrono::high_resolution_clock::now();
-    auto window = Window::create("", 1000, 500);
+    const auto window = Window::create("", 1000, 500);
     std::cout << "Window creation time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - st).count() << " ms" << std::endl;
     st = std::chrono::high_resolution_clock::now();
     auto font = Font("C:/Windows/Fonts/arial.ttf");
@@ -1155,6 +1156,75 @@ void parser_test() {
     }
 }
 
+void polygon_verification() {
+    const auto window = Window::create("", 1000, 800);
+    auto st = std::chrono::high_resolution_clock::now();
+    StaticPolygon polygon(
+    {
+        {1, 1},
+        {1, 100},
+        {100, 1000},
+        {1000, 1},
+        {500, 300}
+    },
+    {
+        {
+            {11, 11},
+           {10, 90},
+           {90, 90},
+        }
+    }
+    );
+    auto mesh = polygon.get_mesh();
+    std::cout << "polygon triangulation time: " << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - st).count() << " mcs" << std::endl;
+    auto shader = Shader::create()->add_file_src(ShaderStage::Vertex, "../shaders/shapes_vert.glsl")->add_file_src(ShaderStage::Fragment, "../shaders/shapes_frag.glsl")->compile();
+    Material m(shader);
+    m.set_uniform("screen_size", Vec2(1000, 800));
+    m.set_uniform("u_color", Vec4(Color(0xff00ffff)));
+    // std::cout << polygon.outer_contour.vertices[0].to_string() << std::endl;
+    const std::vector<Color> gradient = {
+        0xff0000ff,
+        0x0000ffff,
+        0x00ff00ff
+        // 0xff0000ff,
+        // 0xbb3300ff,
+        // 0x888800ff,
+        // 0x33bb00ff,
+        // 0x00ff00ff,
+        // 0x00bb33ff,
+        // 0x008888ff,
+        // 0x0033bbff,
+        // 0x0000ffff,
+        // 0x3300bbff,
+        // 0x880088ff,
+        // 0xbb0033ff,
+    };
+
+    while (true) {
+        Renderer::clear(0xffffffff);
+        Renderer::draw(mesh, m, DrawOptions(GL_TRIANGLES));
+        auto contour = polygon.get_bridged_contour();
+        for (size_t i = 0; i < contour.vertices.size(); ++i) {
+            Line line(contour.vertices[i], contour.vertices[(i + 1) % contour.vertices.size()]);
+            if (line.along().length() < 5)
+            std::cout << line.along().length() << std::endl;
+            Graphics::draw(window, line, gradient[i % gradient.size()]);
+        }
+
+        // for (size_t i = 0; i < polygon.outer_contour.vertices.size(); ++i) {
+            // std::cout << polygon.outer_contour.vertices[i].to_string() << std::endl;
+            // Graphics::draw(window, Line(polygon.outer_contour.vertices[i], polygon.outer_contour.vertices[(i + 1) % polygon.outer_contour.vertices.size()]), Color(0xff0000ff));
+        // }
+        // for (auto contour: polygon.inner_polygon_contours) {
+            // for (size_t i = 0; i < contour.vertices.size(); ++i) {
+               // Graphics::draw(window, Line(contour.vertices[i], contour.vertices[(i + 1) % contour.vertices.size()]), Color(0xff0000ff));
+            // }
+        // }
+
+        window->flipBuffers();
+    }
+}
+
 int main() {
-    parser_test();
+    polygon_verification();
 }

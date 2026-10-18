@@ -82,3 +82,7 @@ float Vec2::distance2(const Vec2& other) const {
 float Vec2::distance(const Vec2& other) const {
     return std::sqrt(distance2(other));
 }
+
+bool Vec2::operator==(const Vec2 &vec2) const {
+    return x == vec2.x && y == vec2.y;
+}

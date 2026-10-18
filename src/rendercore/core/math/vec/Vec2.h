@@ -53,6 +53,8 @@ public:
             std::to_string(x) + ", " +
             std::to_string(y) + ")";
     }
+
+    bool operator==(const Vec2 & vec2) const;
 };
 
 #endif

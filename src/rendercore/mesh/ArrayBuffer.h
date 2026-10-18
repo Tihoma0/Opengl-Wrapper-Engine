@@ -18,6 +18,7 @@ struct ArrayBufferAttribute {
         this->layout = layout;
     }
 
+
     ArrayBufferAttribute& set_layout(int layout) {
         this->layout = layout;
         return *this;

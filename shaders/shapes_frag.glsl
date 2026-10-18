@@ -1,8 +1,12 @@
 #version 330 core
 
-uniform vec4 color;
-out vec4 FragColor;
+uniform vec4 u_color;
+out vec4 fragColor;
 
 void main() {
-    FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);//color;
+    float r = float((gl_PrimitiveID * 3737) % 255) / 255.0;
+    float g = float((gl_PrimitiveID * 737) % 255) / 255.0;
+    float b = float((gl_PrimitiveID * 11337) % 255) / 255.0;
+
+    fragColor = vec4(r, g, b, 0.3);
 }

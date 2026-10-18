@@ -16,7 +16,7 @@ public:
 
 	Color() = default;
 
-    explicit Color(unsigned int color);
+    Color(unsigned int color);
 
 	bool operator==(const Color & o) const {
 	    return r == o.r && g == o.g && b == o.b && a == o.a;
