@@ -16,6 +16,8 @@ public:
 
 	Color() = default;
 
+	~Color() = default;
+
     Color(unsigned int color);
 
 	bool operator==(const Color & o) const {

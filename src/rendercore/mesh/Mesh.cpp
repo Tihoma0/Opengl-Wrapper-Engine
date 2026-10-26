@@ -53,9 +53,14 @@ Mesh::~Mesh(){
 std::shared_ptr<Mesh> Mesh::add_vertex_buffer(const std::shared_ptr<ArrayBuffer>& buffer) {
     buffer->build(vao_id);
     vertex_vbos.emplace_back(buffer);
-    if (warnings.mesh_vertex_mismatch && m_default_vertex_count != 0 && m_default_vertex_count != buffer->group_count())
-        std::cerr << "Warning: your Array Buffers do not have the same vertex count!";
-    m_default_vertex_count = buffer->group_count();
+    if (m_default_vertex_count == 0)
+    {
+        m_default_vertex_count = buffer->group_count();
+    }
+    else if (buffer->group_count() != m_default_vertex_count)
+    {
+        Warnings::warn("Warning: your Array Buffers do not have the same vertex count!", Warnings::Type::MeshVertexMismatch);
+    }
     return shared_from_this();
 }
 
@@ -65,7 +70,7 @@ std::shared_ptr<Mesh> Mesh::add_instance_buffer(const std::shared_ptr<ArrayBuffe
     if (m_default_instance_count == 0) {
         m_default_instance_count = buffer->group_count();
     } else if (m_default_instance_count != buffer->group_count())
-            std::cerr << "Warning: your Array Buffers do not have the same instance count!";
+        Warnings::warn("Warning: your Array Buffers do not have the same instance count!", Warnings::Type::MeshInstanceMismatch);
     return shared_from_this();
 }
 

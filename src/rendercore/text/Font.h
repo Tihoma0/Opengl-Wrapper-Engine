@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "FontParser.h"
-#include " util/Path.h"
+#include "util/Path.h"
 #include "freetype/freetype.h"
 #include "rendercore/material/Material.h"
 #include "rendercore/render/RenderTarget.h"

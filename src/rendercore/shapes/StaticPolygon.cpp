@@ -2,6 +2,7 @@
 #include "StaticPolygon.h"
 
 #include <algorithm>
+#include <format>
 #include <optional>
 
 #include "rendercore/core/Warnings.h"
@@ -80,17 +81,32 @@ bool is_inside_triangle(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2&
 }
 
 
+StaticPolygon::StaticPolygon(OuterPolygonContour outer_contour,
+    const std::vector<InnerPolygonContour>& inner_polygon_contours, const float clean_up_precision): outer_contour(std::move(outer_contour)), inner_polygon_contours(inner_polygon_contours)
+{
+    clean_up_contours(clean_up_precision);
+    // check_degeneracies(clean_up_precision);
+    sort_polygon_contours();
+    calculate_orientation();
+    generate_bridged_contour();
+    build_mesh();
+}
 
 void StaticPolygon::build_mesh() {
-    // return;
+    constexpr float min_triangle_area = 1e-3f;
+    constexpr float min_triangle_area2 = min_triangle_area * min_triangle_area;
     mesh = Mesh::create();
+    if (is_degenerate)
+    {
+        std::cerr << "your mesh is degenerate" << std::endl;
+        return;
+    }
     std::vector<Vec2> remaining_vertices = bridged_contour.vertices;
     std::vector<float> data;
     calculate_orientation();
-    // int triangle_id = 0;
+    bool should_break = false;
     while (remaining_vertices.size() > 2) {
         bool found_ear = false;
-        // std::cout << "\nstarting new triangle " << triangle_id++ << std::endl;
         Vec2 curr;
         Vec2 next;
         Vec2 prev;
@@ -100,17 +116,25 @@ void StaticPolygon::build_mesh() {
             prev = remaining_vertices[prev_i];
             curr = remaining_vertices[i];
             next = remaining_vertices[next_i];
+            const float area2 = (curr - prev).cross(next - prev);
+
+            if (std::abs(area2) <= min_triangle_area2)
+            {
+                remaining_vertices.erase(remaining_vertices.begin() + i);
+                if (remaining_vertices.size() <= 2)
+                {
+                    should_break = true;
+                    break;
+                }
+            }
             if (!is_convex(prev, curr, next, orientation)) {
-                // std::cout << "this one is concave" << std::endl;
                 continue;
             }
             found_ear = true;
-            // std::cout << "this one is convex" << std::endl;
             for (size_t j = 0; j < remaining_vertices.size(); ++j) {
                 if (j == prev_i || j == i || j == next_i)
                     continue;
                 if (is_inside_triangle(prev, curr, next, remaining_vertices[j], orientation)) {
-                    // std::cout << "this one has a point inside" << std::endl;
                     found_ear = false;
                     break;
                 }
@@ -126,10 +150,11 @@ void StaticPolygon::build_mesh() {
             remaining_vertices.erase(remaining_vertices.begin() + i);
             break;
         }
+        if (should_break)
+            break;
         if (!found_ear)
             THROW_RUNTIME("Failed to triangulate polygon");
     }
-    const std::vector<float> test = { 0, 0, 100, 100, 100, 0};
     const auto buf = ArrayBuffer::create(data);
     buf->add_attribute(ArrayBufferAttribute(2, 0));
     mesh->add_vertex_buffer(buf);
@@ -137,10 +162,101 @@ void StaticPolygon::build_mesh() {
 
 
 std::shared_ptr<Mesh> StaticPolygon::get_mesh() {
-    build_mesh();
     return mesh;
 }
 
+
+void StaticPolygon::clean_up_contours(float precision)
+{
+    const float precision2 = precision * precision;
+    std::vector<Vec2> new_vertices;
+    const size_t num_vertices = outer_contour.vertices.size();
+    new_vertices.reserve(num_vertices);
+    for (size_t i = 0; i < num_vertices; ++i)
+    {
+        const auto before = outer_contour.vertices[(i - 1 + num_vertices) % num_vertices];
+        const auto curr = outer_contour.vertices[i];
+        const auto next = outer_contour.vertices[(i + 1) % num_vertices];
+        const auto curr_to_next = next - curr;
+        const auto before_to_next = before - next;
+        const bool is_too_close = curr_to_next.length2() <= precision;
+        const float cross = curr_to_next.cross(before_to_next);
+        const bool is_colinear = cross * cross < precision2 * before_to_next.length2();
+        const bool continues_forward =
+            curr_to_next.dot(curr - before) >= 0.0f;
+        if (!is_too_close && !(is_colinear && continues_forward))
+            new_vertices.push_back(curr);
+    }
+    new_vertices.swap(outer_contour.vertices);
+    for (size_t j = 0; j < inner_polygon_contours.size();)
+    {
+        auto& inner_polygon_contour = inner_polygon_contours[j];
+        const size_t num_vertices = inner_polygon_contour.vertices.size();
+        if (num_vertices <= 2)
+        {
+            inner_polygon_contours.erase(inner_polygon_contours.begin() + j);
+        }
+        else {
+            std::vector<Vec2> new_inner_polygon_contour_vertices;
+            new_inner_polygon_contour_vertices.reserve(num_vertices);
+            for (size_t i = 0; i < num_vertices; ++i)
+            {
+                const auto before = inner_polygon_contour.vertices[(i - 1 + num_vertices) % num_vertices];
+                const auto curr = inner_polygon_contour.vertices[i];
+                const auto next = inner_polygon_contour.vertices[(i + 1) % num_vertices];
+                const auto curr_to_next = next - curr;
+                const auto before_to_next = before - next;
+                const bool is_too_close = curr_to_next.length2() <= precision;
+                const float cross = curr_to_next.cross(before_to_next);
+                const bool is_colinear = cross * cross < precision2 * before_to_next.length2();
+                const bool continues_forward =
+                    curr_to_next.dot(curr - before) >= 0.0f;
+                if (!is_too_close && !(is_colinear && continues_forward))
+                    new_inner_polygon_contour_vertices.push_back(curr);
+            }
+            new_inner_polygon_contour_vertices.swap(inner_polygon_contour.vertices);
+            j++;
+        }
+    }
+}
+
+void StaticPolygon::check_degeneracies(float precision)
+{
+    const size_t outer_contour_vertex_count = outer_contour.vertices.size();
+    if (outer_contour_vertex_count <= 2)
+    {
+        is_degenerate = true;
+        return;
+    }
+    float total = 0;
+    for (size_t i = 0; i < outer_contour_vertex_count; ++i) {
+        const auto p0 = outer_contour.vertices[i];
+        const auto p1 = outer_contour.vertices[(i + 1) % outer_contour_vertex_count];
+        total += (p1.x - p0.x) * (p1.y + p0.y);
+    }
+    if (total < precision)
+    {
+        is_degenerate = true;
+        return;
+    }
+    for (size_t i = 0; i < inner_polygon_contours.size(); ++i)
+    {
+        size_t vertex_count = inner_polygon_contours[i].vertices.size();
+        if (vertex_count <= 2)
+            inner_polygon_contours.erase(inner_polygon_contours.begin() + i);
+        else
+        {
+            total = 0;
+            for (size_t i = 0; i < outer_contour_vertex_count; ++i) {
+                const auto p0 = outer_contour.vertices[i];
+                const auto p1 = outer_contour.vertices[(i + 1) % outer_contour_vertex_count];
+                total += (p1.x - p0.x) * (p1.y + p0.y);
+            }
+            if (total < precision)
+                inner_polygon_contours.erase(inner_polygon_contours.begin() + i);
+        }
+    }
+}
 
 void StaticPolygon::calculate_orientation() {
     float total = 0;
@@ -153,6 +269,10 @@ void StaticPolygon::calculate_orientation() {
 }
 
 void StaticPolygon::generate_bridged_contour() {
+    if (outer_contour.vertices.size() <= 2)
+    {
+        Warnings::warn(std::format("Warning: your polygon has only {} vertices", outer_contour.vertices.size()), Warnings::Type::PolygonVertexMismatch);
+    }
     bridged_contour = outer_contour;
     for (const auto & contour : inner_polygon_contours) {
         // search

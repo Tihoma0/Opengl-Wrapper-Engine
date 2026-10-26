@@ -3,7 +3,7 @@
 #define GRAPHICS_H
 #include <memory>
 
-#include "core/math/shapes/BezierGroup.h"
+#include "shapes/BezierGroup.h"
 
 
 class BezierCurve;

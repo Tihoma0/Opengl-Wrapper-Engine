@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include " util/Path.h"
+#include "util/Path.h"
 #include "rendercore/core/enums/textures/PixelStorageFormat.h"
 
 

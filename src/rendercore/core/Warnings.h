@@ -6,35 +6,45 @@
 // #define DEBUG_MODE
 
 #include <glad/glad.h>
+#include <iostream>
 
 #define THROW_RUNTIME(msg) \
 throw std::runtime_error(std::string(msg) + " (" + __FILE__ + ":" + std::to_string(__LINE__) + ")");
 
-class GLContext;
-
-struct WarningConfig {
-    bool mesh_vertex_mismatch = true;
-    bool mesh_instance_mismatch = true;
-    bool gl_debug_messages = true;
-};
 
 inline void APIENTRY debugCallback(GLenum source, GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar* message,const void* userParam)
 {
     fprintf(stderr, "OpenGL Debug: %s\n", message);
 }
 
-inline WarningConfig warnings;
-
 namespace Warnings {
 
-    inline void disableMeshWarnings() {
-        warnings.mesh_vertex_mismatch = false;
-        warnings.mesh_instance_mismatch = false;
+    enum class Type : uint32_t
+    {
+        General               = 1 << 0,
+        PolygonVertexMismatch = 1 << 1,
+        MeshVertexMismatch    = 1 << 2,
+        MeshInstanceMismatch  = 1 << 3
+    };
+
+    inline uint32_t enabled = 0xffffffff;
+
+    inline void enable_all()
+    {
+        enabled = 0xffffffff;
     }
 
-    inline void enableMeshWarnings() {
-        warnings.mesh_vertex_mismatch = true;
-        warnings.mesh_instance_mismatch = true;
+    inline void disable_all()
+    {
+        enabled = 0;
+    }
+
+    inline void disable(Type type) {
+        enabled &= ~static_cast<uint32_t>(type);
+    }
+
+    inline void enable(Type type) {
+        enabled |= static_cast<uint32_t>(type);
     }
 
     inline void enableGLDebugMessages() {
@@ -48,15 +58,10 @@ namespace Warnings {
         glDisable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     }
 
-    inline void disableWarnings() {
-        disableMeshWarnings();
-        disableGLDebugMessages();
-    }
-
-
-    inline void enableWarnings() {
-        enableMeshWarnings();
-        enableGLDebugMessages();
+    inline void warn(const std::string& message, Type type)
+    {
+        if (enabled & static_cast<uint32_t>(type))
+            std::cerr << message << std::endl;
     }
 
 }

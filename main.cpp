@@ -29,15 +29,15 @@
 #include "rendercore/surface/textures/Texture.h"
 
 #include "rendercore/core/enums/mesh/DrawOptions.h"
-#include "rendercore/core/math/shapes/Circle.h"
-#include "rendercore/core/math/shapes/CircleGroup.h"
-#include "rendercore/core/math/shapes/BezierCurve.h"
-#include "rendercore/core/math/shapes/BezierGroup.h"
-#include "rendercore/core/math/shapes/Line.h"
-#include "rendercore/core/math/shapes/LineGroup.h"
-#include "rendercore/core/math/shapes/StaticPolygon.h"
-#include "rendercore/core/math/shapes/RectangleGroup.h"
-#include "src/rendercore/core/math/shapes/Rectangle.h"
+#include "rendercore/shapes/Circle.h"
+#include "rendercore/shapes/CircleGroup.h"
+#include "rendercore/shapes/BezierCurve.h"
+#include "rendercore/shapes/BezierGroup.h"
+#include "rendercore/shapes/Line.h"
+#include "rendercore/shapes/LineGroup.h"
+#include "rendercore/shapes/StaticPolygon.h"
+#include "rendercore/shapes/RectangleGroup.h"
+#include "src/rendercore/shapes/Rectangle.h"
 #include "rendercore/surface/images/ImageProcessor.h"
 #include "rendercore/text/Font.h"
 #include "rendercore/text/FontParser.h"
@@ -935,7 +935,8 @@ void conversion_stress_test()
     int num_shapes = 400;
     std::mt19937 rng(std::random_device{}());
     std::uniform_real_distribution<float> dist(0.0f, 500.0f);
-    const std::vector colors = {
+    std::vector<Color> colors;
+    colors = {
         Color(0xffffffff),
         Color(0x00ffffff),
         Color(0xff00ffff),
@@ -1161,17 +1162,18 @@ void polygon_verification() {
     auto st = std::chrono::high_resolution_clock::now();
     StaticPolygon polygon(
     {
-        {1, 1},
-        {1, 100},
-        {100, 1000},
-        {1000, 1},
-        {500, 300}
+        {0, 0},
+        {100, 0},
+        {100, 100},
+        {0, 100},
+        {100, 100},
+
     },
     {
         {
-            {11, 11},
-           {10, 90},
-           {90, 90},
+            // {11, 11},
+           // {101, 101},
+           // {11, 101},
         }
     }
     );

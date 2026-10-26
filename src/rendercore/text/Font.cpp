@@ -11,8 +11,8 @@
 #include "rendercore/render/Renderer.h"
 #include "rendercore/surface/Color.h"
 #include "rendercore/core/enums/mesh/DrawOptions.h"
-#include "rendercore/core/math/shapes/BezierCurve.h"
-#include "rendercore/core/math/shapes/Line.h"
+#include "rendercore/shapes/BezierCurve.h"
+#include "rendercore/shapes/Line.h"
 #include "rendercore/surface/textures/Sampler.h"
 
 thread_local FT_Library BitmapFont::lib;

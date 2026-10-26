@@ -3,7 +3,7 @@
 
 #include <cmath>
 
-#include "../vec/Vec4.h"
+#include "rendercore/core/math/vec/Vec4.h"
 
 class Mat4 {
 public:

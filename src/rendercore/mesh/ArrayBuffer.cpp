@@ -29,7 +29,7 @@ std::shared_ptr<ArrayBuffer> ArrayBuffer::set_data(const std::vector<float>& new
     if (is_built) {
         glBindBuffer(GL_ARRAY_BUFFER, m_id);
         glBufferData(GL_ARRAY_BUFFER, new_data.size() * sizeof(float), new_data.data(), to_gl(usage));
-        m_group_count = new_data.size() / attributes[0].size;
+        m_group_count = new_data.size() / m_stride;
     }
     return shared_from_this();
 }
@@ -41,12 +41,17 @@ void ArrayBuffer::update_data(const std::vector<float>& new_data, const int star
     int start_bytes = start * sizeof(float);
     glBufferSubData(GL_ARRAY_BUFFER, start_bytes, byte_size, new_data.data());
     std::memcpy(this->data.data() + start, new_data.data(), byte_size);
-    m_group_count = this->data.size() / attributes[0].size;
+    m_group_count = this->data.size() / m_stride;
 }
 std::shared_ptr<ArrayBuffer> ArrayBuffer::add_attribute(ArrayBufferAttribute attribute) {
+    if (const int attrib_stride = attribute.size + attribute.offset; attrib_stride > m_stride) {
+        m_stride = attrib_stride;
+        m_group_count = this->data.size() / m_stride;
+    }
     attributes.push_back(attribute);
     return shared_from_this();
 }
+
 std::shared_ptr<ArrayBuffer> ArrayBuffer::set_usage(unsigned int usage) {
     this->usage = usage;
     return shared_from_this();
@@ -56,14 +61,6 @@ std::shared_ptr<ArrayBuffer> ArrayBuffer::build(const GLuint vao) {
     bind_vao(vao);
     glBindBuffer(GL_ARRAY_BUFFER, m_id);
     glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), usage);
-
-    m_stride = 0;
-    for (const auto& attribute : attributes) {
-        if (const int attrib_stride = attribute.size + attribute.offset; attrib_stride > m_stride) {
-            m_stride = attrib_stride;
-        }
-    }
-
     const int stride_bytes = static_cast<int>(m_stride * sizeof(float));
     m_group_count = static_cast<int>(data.size()) / m_stride;
     for (const auto& attribute : attributes) {

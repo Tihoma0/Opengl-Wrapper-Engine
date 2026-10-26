@@ -9,8 +9,8 @@
 
 #include "BinReader.h"
 #include "rendercore/core/Warnings.h"
-#include "rendercore/core/math/shapes/BezierCurve.h"
-#include "rendercore/core/math/shapes/Line.h"
+#include "rendercore/shapes/BezierCurve.h"
+#include "rendercore/shapes/Line.h"
 
 FontParser::FontHeader FontParser::parse_header(std::ifstream& stream) {
     FontHeader result{};

@@ -49,15 +49,10 @@ private:
 
 class StaticPolygon {
 public:
-    const OuterPolygonContour outer_contour;
+    OuterPolygonContour outer_contour;
     std::vector<InnerPolygonContour> inner_polygon_contours;
 
-    StaticPolygon(OuterPolygonContour outer_contour, const std::vector<InnerPolygonContour>& inner_polygon_contours) : outer_contour(std::move(outer_contour)), inner_polygon_contours(inner_polygon_contours) {
-        sort_polygon_contours();
-        calculate_orientation();
-        generate_bridged_contour();
-
-    }
+    StaticPolygon(OuterPolygonContour outer_contour, const std::vector<InnerPolygonContour>& inner_polygon_contours, const float clean_up_precision = 1e-2f);
 
     void build_mesh();
     [[nodiscard]] OuterPolygonContour get_bridged_contour() const { return bridged_contour; }
@@ -69,6 +64,10 @@ private:
 
     ContourOrientation orientation;
 
+    bool is_degenerate = false;
+
+    void clean_up_contours(float precision);
+    void check_degeneracies(float precision);
     void calculate_orientation();
     void generate_bridged_contour();
     void sort_polygon_contours();

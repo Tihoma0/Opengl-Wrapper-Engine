@@ -1,6 +1,20 @@
 #ifndef LINE_H
 #define LINE_H
-#include "../vec/Vec2.h"
+#include "rendercore/core/math/vec/Vec2.h"
+
+enum class IntersectionType
+{
+    None,
+    Point,
+    Overlap
+};
+
+struct Intersection
+{
+    IntersectionType type = IntersectionType::None;
+    bool doesIntersect = false;
+    Vec2 intersectionPoint = {};
+};
 
 class Line {
 public:
@@ -17,19 +31,16 @@ public:
     [[nodiscard]] Vec2 center() const { return {(x1 + x2) / 2, (y1 + y2) / 2}; }
     [[nodiscard]] Vec2 along() const { return {x2 - x1, y2 - y1}; }
     [[nodiscard]] Line swap() const { return {x2, y2, x1, y1}; }
-    [[nodiscard]] std::pair<bool, Vec2> intersection(const Line& other) const {
+    [[nodiscard]] Intersection intersection(const Line& other) const {
         const auto m_along = along();
         const auto o_along = other.along();
         const float denom = m_along.cross(o_along);
         if (std::abs(denom) < 1e-6f) {
             const auto to_other_start = other.start() - this->start();
             if (std::abs(m_along.cross(to_other_start)) < 1e-6f) {
-                // THEY ARE COLLINEAR!
-                // Depending on your logic, a hole vertex touching an edge
-                // means you should return 'true' and the overlapping vertex coordinate.
-                // (You will need boundary-box checks here to see if they actually overlap)
+                // colinear
             }
-            return {false, {0.0f, 0.0f}};
+            // parallel but not colinear
         }
         const Vec2 start_diff = other.start() - start();
         const float t = start_diff.cross(o_along) / denom;

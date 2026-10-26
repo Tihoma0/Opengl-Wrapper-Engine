@@ -42,8 +42,8 @@ file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS
 )
 
 add_library(engine ${ENGINE_SRC}
-        "src/ util/Path.cpp"
-        "src/ util/Path.h"
+        "src/util/Path.cpp"
+        "src/util/Path.h"
 )
 
 add_executable(GLWrapper_II main.cpp)
