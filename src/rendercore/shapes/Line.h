@@ -1,5 +1,7 @@
 #ifndef LINE_H
 #define LINE_H
+#include <algorithm>
+
 #include "rendercore/core/math/vec/Vec2.h"
 
 enum class IntersectionType
@@ -11,9 +13,9 @@ enum class IntersectionType
 
 struct Intersection
 {
+    bool does_intersect = false;
     IntersectionType type = IntersectionType::None;
-    bool doesIntersect = false;
-    Vec2 intersectionPoint = {};
+    Vec2 point = {};
 };
 
 class Line {
@@ -31,28 +33,95 @@ public:
     [[nodiscard]] Vec2 center() const { return {(x1 + x2) / 2, (y1 + y2) / 2}; }
     [[nodiscard]] Vec2 along() const { return {x2 - x1, y2 - y1}; }
     [[nodiscard]] Line swap() const { return {x2, y2, x1, y1}; }
-    [[nodiscard]] Intersection intersection(const Line& other) const {
+    [[nodiscard]] Intersection intersection(const Line& other, const float precision = 1e-6f) const {
+        const float precision2 = precision * precision;
         const auto m_along = along();
         const auto o_along = other.along();
-        const float denom = m_along.cross(o_along);
-        if (std::abs(denom) < 1e-6f) {
-            const auto to_other_start = other.start() - this->start();
-            if (std::abs(m_along.cross(to_other_start)) < 1e-6f) {
-                // colinear
+        if (m_along.length2() <= precision2)
+        {
+            if (o_along.length2() <= precision2)
+            {
+                if ((other.start() - start()).length2() <= precision2)
+                    return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
+                return {.does_intersect = false};
             }
-            // parallel but not colinear
+            const auto to_point = start() - other.start();
+            const auto projection_axis = o_along.normalized();
+
+            if (std::abs(projection_axis.cross(to_point)) >= precision)
+                return {.does_intersect = false};
+
+            const float p = projection_axis.dot(start());
+            const float p1 = projection_axis.dot(other.start());
+            const float p2 = projection_axis.dot(other.end());
+            if (const auto [other_min, other_max] = std::minmax(p1, p2); p >= other_min - precision && p <= other_max + precision)
+                return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
+            return {.does_intersect = false};
+        }
+        if (o_along.length2() <= precision2)
+        {
+            if (m_along.length2() <= precision2)
+            {
+                if ((other.start() - start()).length2() <= precision2)
+                    return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
+                return {.does_intersect = false};
+            }
+            const auto to_point = start() - other.start();
+            const auto projection_axis = o_along.normalized();
+            if (std::abs(projection_axis.cross(to_point)) >= precision)
+                return {.does_intersect = false};
+            const float p = projection_axis.dot(other.start());
+            const float p1 = projection_axis.dot(start());
+            const float p2 = projection_axis.dot(end());
+            if (const auto [own_min, own_max] = std::minmax(p1, p2); p >= own_min - precision && p <= own_max + precision)
+                return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
+            return {.does_intersect = false};
+        }
+        const float denom = m_along.cross(o_along);
+        if (std::abs(denom) <= precision) {
+            if (const auto to_other_start = other.start() - this->start(); std::abs(m_along.cross(to_other_start)) <= precision) {
+                const auto projection_axis = m_along.normalized();
+                const float p0 = start().dot(projection_axis);
+                const float p1 = end().dot(projection_axis);
+
+                const float p2 = other.start().dot(projection_axis);
+                const float p3 = other.end().dot(projection_axis);
+
+                const float max_own_point = std::max(p0, p1);
+                const float min_own_point = std::min(p0, p1);
+
+                const float max_other_point = std::max(p2, p3);
+                const float min_other_point = std::min(p2, p3);
+
+                const float overlap_start = std::max(min_own_point, min_other_point);
+                const float overlap_end = std::min(max_own_point, max_other_point);
+
+                if (overlap_start > overlap_end)
+                {
+                    return {.does_intersect = false};
+                }
+                const Vec2 intersection_point =
+                    end() + projection_axis * ((overlap_start + overlap_end) * 0.5f - p1); // this is the result of a long dispute... and again I was wrong - but JUST leave me my own touch!
+
+                const auto type = abs(overlap_start - overlap_end) <= precision
+                    ? IntersectionType::Point
+                    : IntersectionType::Overlap;
+
+                return {.does_intersect = true, .type = type, .point = intersection_point};
+            }
+            return {.does_intersect = false};
         }
         const Vec2 start_diff = other.start() - start();
         const float t = start_diff.cross(o_along) / denom;
         const float u = start_diff.cross(m_along) / denom;
-        if (t >= -1e-6f && t <= 1.0f + 1e-6f && u >= -1e-6f && u <= 1.0f + 1e-6f) {
+        if (t >= -precision && t <= 1.0f + precision && u >= -precision && u <= 1.0f + precision) {
             Vec2 intersect_point = {
                 this->x1 + t * m_along.x,
                 this->y1 + t * m_along.y
             };
-            return {true, intersect_point};
+            return {.does_intersect = true, .type = IntersectionType::Point, .point = intersect_point};
         }
-        return {false, {0.0f, 0.0f}};
+        return {.does_intersect = false};
     }
 };
 

@@ -284,7 +284,7 @@ void StaticPolygon::generate_bridged_contour() {
             const auto& p0 = bridged_contour.vertices[l_i];
             const auto& p1 = bridged_contour.vertices[(l_i + 1) % bridged_contour.vertices.size()];
             Line line(p0.x, p0.y, p1.x, p1.y);
-            if (const auto& [is_intersecting, intersection] = ray.intersection(line); is_intersecting && (!nearest_intersection || intersection.x < nearest_intersection.value().x)) {
+            if (const auto& [is_intersecting, intersection_type, intersection] = ray.intersection(line); is_intersecting && (!nearest_intersection || intersection.x < nearest_intersection.value().x)) {
                 nearest_intersection = intersection;
                 nearest_intersection_vertex_index = l_i;
             }

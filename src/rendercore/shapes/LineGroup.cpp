@@ -63,7 +63,7 @@ void LineGroup::build_quad_mesh() {
     for (int i = 0; i < lines.size(); ++i) {
         data[i*4] = lines[i].x1;
         data[i*4 + 1] = lines[i].y1;
-        const auto normal = lines[i].along().normalize();
+        const auto normal = lines[i].along().normalized();
         data[i*4 + 2] = normal.x;
         data[i*4 + 3] = normal.y;
     }

@@ -148,7 +148,7 @@ void Graphics::draw(const std::shared_ptr<RenderTarget> &target, const Line &lin
     line_material->set_uniform("screen_size", Vec2(static_cast<float>(target->width()), static_cast<float>(target->height())));
     line_material->set_uniform("start", line.start());
     const auto vec = line.along();
-    line_material->set_uniform("normal", vec.normalize());
+    line_material->set_uniform("normal", vec.normalized());
     line_material->set_uniform("length", vec.length());
     line_material->set_uniform("width", line.width);
     line_material->set_uniform("color", Vec4(color));

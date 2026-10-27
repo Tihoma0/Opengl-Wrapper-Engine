@@ -59,7 +59,7 @@ float Vec2::length2() const {
     return x * x + y * y;
 }
 
-Vec2 Vec2::normalize() const {
+Vec2 Vec2::normalized() const {
     const float len = length();
     if (len <= 0.0f) return {0, 0};
     return {x / len, y / len};

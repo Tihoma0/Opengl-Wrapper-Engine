@@ -33,7 +33,7 @@ public:
     [[nodiscard]] float length() const;
     [[nodiscard]] float length2() const;
 
-    [[nodiscard]] Vec2 normalize() const;
+    [[nodiscard]] Vec2 normalized() const;
 
     [[nodiscard]] float dot(const Vec2& other) const;
     [[nodiscard]] float cross(const Vec2& other) const;
