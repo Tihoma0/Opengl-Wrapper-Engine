@@ -8,7 +8,8 @@ enum class IntersectionType
 {
     None,
     Point,
-    Overlap
+    Overlap,
+    Touching
 };
 
 struct Intersection
@@ -37,44 +38,39 @@ public:
         const float precision2 = precision * precision;
         const auto m_along = along();
         const auto o_along = other.along();
-        if (m_along.length2() <= precision2)
+
+        const bool is_self_degenerate = m_along.length2() <= precision2;
+        const bool is_other_degenerate = o_along.length2() <= precision2;
+        if (is_self_degenerate && is_other_degenerate)
         {
-            if (o_along.length2() <= precision2)
-            {
-                if ((other.start() - start()).length2() <= precision2)
-                    return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
-                return {.does_intersect = false};
-            }
+            if ((other.start() - start()).length2() <= precision2)
+                return {.does_intersect = true, .type = IntersectionType::Touching, .point = start()};
+            return {.does_intersect = false};
+        }
+        if (is_self_degenerate)
+        {
             const auto to_point = start() - other.start();
             const auto projection_axis = o_along.normalized();
 
             if (std::abs(projection_axis.cross(to_point)) >= precision)
                 return {.does_intersect = false};
 
-            const float p = projection_axis.dot(start());
-            const float p1 = projection_axis.dot(other.start());
-            const float p2 = projection_axis.dot(other.end());
-            if (const auto [other_min, other_max] = std::minmax(p1, p2); p >= other_min - precision && p <= other_max + precision)
+            const float p = projection_axis.dot(to_point);
+            if (p >= -precision && p <= o_along.length() + precision)
                 return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
             return {.does_intersect = false};
         }
-        if (o_along.length2() <= precision2)
+        if (is_other_degenerate)
         {
-            if (m_along.length2() <= precision2)
-            {
-                if ((other.start() - start()).length2() <= precision2)
-                    return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
-                return {.does_intersect = false};
-            }
             const auto to_point = start() - other.start();
-            const auto projection_axis = o_along.normalized();
+            const auto projection_axis = m_along.normalized();
+
             if (std::abs(projection_axis.cross(to_point)) >= precision)
                 return {.does_intersect = false};
-            const float p = projection_axis.dot(other.start());
-            const float p1 = projection_axis.dot(start());
-            const float p2 = projection_axis.dot(end());
-            if (const auto [own_min, own_max] = std::minmax(p1, p2); p >= own_min - precision && p <= own_max + precision)
-                return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
+
+            const float p = projection_axis.dot(to_point);
+            if (p >= -precision && p <= m_along.length() + precision)
+                return {.does_intersect = true, .type = IntersectionType::Point, .point = other.start()};
             return {.does_intersect = false};
         }
         const float denom = m_along.cross(o_along);
@@ -104,7 +100,7 @@ public:
                     end() + projection_axis * ((overlap_start + overlap_end) * 0.5f - p1); // this is the result of a long dispute... and again I was wrong - but JUST leave me my own touch!
 
                 const auto type = abs(overlap_start - overlap_end) <= precision
-                    ? IntersectionType::Point
+                    ? IntersectionType::Touching
                     : IntersectionType::Overlap;
 
                 return {.does_intersect = true, .type = type, .point = intersection_point};
@@ -114,12 +110,17 @@ public:
         const Vec2 start_diff = other.start() - start();
         const float t = start_diff.cross(o_along) / denom;
         const float u = start_diff.cross(m_along) / denom;
+
         if (t >= -precision && t <= 1.0f + precision && u >= -precision && u <= 1.0f + precision) {
+
+            IntersectionType type = t >= precision || t >= 1.0f - precision || u <= precision || u >= 1.0f - precision
+                ? IntersectionType::Touching
+                : IntersectionType::Overlap;
             Vec2 intersect_point = {
                 this->x1 + t * m_along.x,
                 this->y1 + t * m_along.y
             };
-            return {.does_intersect = true, .type = IntersectionType::Point, .point = intersect_point};
+            return {.does_intersect = true, .type = type, .point = intersect_point};
         }
         return {.does_intersect = false};
     }

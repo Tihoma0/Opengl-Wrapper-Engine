@@ -218,6 +218,34 @@ void StaticPolygon::clean_up_contours(float precision)
             j++;
         }
     }
+    for (size_t i = 0; i < num_vertices; ++i)
+    {
+        const size_t i_next = (i + 1) % num_vertices;
+
+        for (size_t j = i + 1; j < num_vertices; ++j)
+        {
+            const size_t j_next = (j + 1) % num_vertices;
+            if (i_next == j || j_next == i)
+                continue;
+            const Line a(outer_contour.vertices[i], outer_contour.vertices[i_next]);
+            const Line b(outer_contour.vertices[j], outer_contour.vertices[j_next]);
+
+            if (auto intersection = a.intersection(b); intersection.does_intersect)
+            {
+                std::cout << i<< ", " << i_next << " | " << j << ", " << j_next << " SELF INTERSECTION" << std::endl;
+                if (intersection.type == IntersectionType::Touching)
+                    continue;
+                if (intersection.type == IntersectionType::Overlap)
+                {
+                    // I dont know at all
+                }
+                if (intersection.type == IntersectionType::Point)
+                {
+                    // prolly invert the orientation of the rest of the contour until a new self intersection is detected and add a point at the intersection
+                }
+            }
+        }
+    }
 }
 
 void StaticPolygon::check_degeneracies(float precision)
