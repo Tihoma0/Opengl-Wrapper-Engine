@@ -66,18 +66,18 @@ ContourOrientation InnerPolygonContour::get_orientation() const {
     return orientation;
 }
 
-bool is_convex(const Vec2& prev, const Vec2& curr, const Vec2& next, const ContourOrientation winding) {
+bool is_convex(const Vec2& prev, const Vec2& curr, const Vec2& next, const ContourOrientation winding, const float precision = 1e-2f) {
     const auto cross = (curr - prev).cross(next - curr);
     return winding == ContourOrientation::CounterClockwise ? cross < 0 : cross > 0;
 }
 
-bool is_inside_triangle(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& p, const ContourOrientation winding) {
+bool is_inside_triangle(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2& p, const ContourOrientation winding, const float precision = 1e-2f) {
     const auto cross0 = (b - a).cross(p - a);
     const auto cross1 = (c - b).cross(p - b);
     const auto cross2 = (a - c).cross(p - c);
     if (winding == ContourOrientation::Clockwise)
-        return cross0 > 0 && cross1 > 0 && cross2 > 0;
-    return cross0 < 0 && cross1 < 0 && cross2 < 0;
+        return cross0 >= -precision && cross1 >= -precision && cross2 >= -precision;
+    return cross0 <= precision && cross1 <= precision && cross2 <= precision;
 }
 
 
@@ -233,14 +233,18 @@ void StaticPolygon::clean_up_contours(float precision)
             if (auto intersection = a.intersection(b); intersection.does_intersect)
             {
                 std::cout << i<< ", " << i_next << " | " << j << ", " << j_next << " SELF INTERSECTION" << std::endl;
-                if (intersection.type == IntersectionType::Touching)
+                if (intersection.type == IntersectionType::Touching) {
+                    std::cout << "TOUCHJING INTERSECTION" << std::endl;
                     continue;
+                }
                 if (intersection.type == IntersectionType::Overlap)
                 {
+                    std::cout << "OVERLALP INTERSECTION\n" << intersection.point.to_string() << std::endl;
                     // I dont know at all
                 }
                 if (intersection.type == IntersectionType::Point)
                 {
+                    std::cout << "POINT INTERSECTION" << std::endl;
                     // prolly invert the orientation of the rest of the contour until a new self intersection is detected and add a point at the intersection
                 }
             }

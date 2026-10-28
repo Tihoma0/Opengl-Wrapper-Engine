@@ -15,7 +15,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             -Wno-nested-anon-types
     )
 endif()
-
 include(FetchContent)
 
 FetchContent_Declare(
@@ -42,8 +41,8 @@ file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS
 )
 
 add_library(engine ${ENGINE_SRC}
-        "src/util/Path.cpp"
-        "src/util/Path.h"
+        src/util/Path.cpp
+        src/util/Path.h
 )
 
 add_executable(GLWrapper_II main.cpp)
@@ -93,6 +92,7 @@ else()
             -Wconversion
     )
 endif()
+target_compile_options(engine PRIVATE -w)
 
 
 target_link_libraries(GLWrapper_II PRIVATE mingwex ucrt winpthread)

@@ -6,6 +6,11 @@
 class Color;
 class Mat4;
 
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 class Vec4 {
 public:
     union {
@@ -59,5 +64,7 @@ public:
             std::to_string(w) + ")";
     }
 };
-
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 #endif

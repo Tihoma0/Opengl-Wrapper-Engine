@@ -38,38 +38,40 @@ public:
         const float precision2 = precision * precision;
         const auto m_along = along();
         const auto o_along = other.along();
+        float m_along_len = m_along.length();
+        float o_along_len = o_along.length();
 
-        const bool is_self_degenerate = m_along.length2() <= precision2;
-        const bool is_other_degenerate = o_along.length2() <= precision2;
+        const auto to_point = start() - other.start();
+
+        const bool is_self_degenerate = m_along_len <= precision;
+        const bool is_other_degenerate = o_along_len <= precision;
         if (is_self_degenerate && is_other_degenerate)
         {
-            if ((other.start() - start()).length2() <= precision2)
+            if (to_point.length2() <= precision2)
                 return {.does_intersect = true, .type = IntersectionType::Touching, .point = start()};
             return {.does_intersect = false};
         }
         if (is_self_degenerate)
         {
-            const auto to_point = start() - other.start();
             const auto projection_axis = o_along.normalized();
 
             if (std::abs(projection_axis.cross(to_point)) >= precision)
                 return {.does_intersect = false};
 
             const float p = projection_axis.dot(to_point);
-            if (p >= -precision && p <= o_along.length() + precision)
+            if (p >= -precision && p <= o_along_len + precision)
                 return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
             return {.does_intersect = false};
         }
         if (is_other_degenerate)
         {
-            const auto to_point = start() - other.start();
             const auto projection_axis = m_along.normalized();
 
             if (std::abs(projection_axis.cross(to_point)) >= precision)
                 return {.does_intersect = false};
 
             const float p = projection_axis.dot(to_point);
-            if (p >= -precision && p <= m_along.length() + precision)
+            if (p >= -precision && p <= m_along_len + precision)
                 return {.does_intersect = true, .type = IntersectionType::Point, .point = other.start()};
             return {.does_intersect = false};
         }
@@ -108,12 +110,12 @@ public:
             return {.does_intersect = false};
         }
         const Vec2 start_diff = other.start() - start();
+        const float t_tolerance = (m_along_len > 0.0f) ? (precision / m_along_len) : 1e-4f;
+        const float u_tolerance = (o_along_len > 0.0f) ? (precision / o_along_len) : 1e-4f;
         const float t = start_diff.cross(o_along) / denom;
         const float u = start_diff.cross(m_along) / denom;
-
         if (t >= -precision && t <= 1.0f + precision && u >= -precision && u <= 1.0f + precision) {
-
-            IntersectionType type = t >= precision || t >= 1.0f - precision || u <= precision || u >= 1.0f - precision
+            IntersectionType type = t <= t_tolerance || t >= 1.0f - t_tolerance || u <= u_tolerance || u >= 1.0f - u_tolerance
                 ? IntersectionType::Touching
                 : IntersectionType::Overlap;
             Vec2 intersect_point = {
