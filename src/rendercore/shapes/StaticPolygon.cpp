@@ -76,8 +76,8 @@ bool is_inside_triangle(const Vec2& a, const Vec2& b, const Vec2& c, const Vec2&
     const auto cross1 = (c - b).cross(p - b);
     const auto cross2 = (a - c).cross(p - c);
     if (winding == ContourOrientation::Clockwise)
-        return cross0 >= -precision && cross1 >= -precision && cross2 >= -precision;
-    return cross0 <= precision && cross1 <= precision && cross2 <= precision;
+        return cross0 >= precision && cross1 >= precision && cross2 >= precision;
+    return cross0 <= -precision && cross1 <= -precision && cross2 <= -precision;
 }
 
 
@@ -166,6 +166,13 @@ std::shared_ptr<Mesh> StaticPolygon::get_mesh() {
 }
 
 
+
+struct ContourInsertion {
+    Vec2 point;
+    size_t edge_idx;
+    float param;
+};
+
 void StaticPolygon::clean_up_contours(float precision)
 {
     const float precision2 = precision * precision;
@@ -218,6 +225,7 @@ void StaticPolygon::clean_up_contours(float precision)
             j++;
         }
     }
+    std::vector<ContourInsertion> contour_insertions;
     for (size_t i = 0; i < num_vertices; ++i)
     {
         const size_t i_next = (i + 1) % num_vertices;
@@ -232,7 +240,7 @@ void StaticPolygon::clean_up_contours(float precision)
 
             if (auto intersection = a.intersection(b); intersection.does_intersect)
             {
-                std::cout << i<< ", " << i_next << " | " << j << ", " << j_next << " SELF INTERSECTION" << std::endl;
+                std::cout << i<< ", " << i_next << " | " << j << ", " << j_next << "  |  -->";
                 if (intersection.type == IntersectionType::Touching) {
                     std::cout << "TOUCHJING INTERSECTION" << std::endl;
                     continue;
@@ -245,7 +253,12 @@ void StaticPolygon::clean_up_contours(float precision)
                 if (intersection.type == IntersectionType::Point)
                 {
                     std::cout << "POINT INTERSECTION" << std::endl;
-                    // prolly invert the orientation of the rest of the contour until a new self intersection is detected and add a point at the intersection
+                    // split
+                    // point = intersection.point
+                    // insert at i next and j next
+                    // id need to know what the winding order of the other contour is
+                    // but WHAT IF THE OTHER CONTOUR HAS MORE INTERSECTIONS
+
                 }
             }
         }
@@ -316,7 +329,7 @@ void StaticPolygon::generate_bridged_contour() {
             const auto& p0 = bridged_contour.vertices[l_i];
             const auto& p1 = bridged_contour.vertices[(l_i + 1) % bridged_contour.vertices.size()];
             Line line(p0.x, p0.y, p1.x, p1.y);
-            if (const auto& [is_intersecting, intersection_type, intersection] = ray.intersection(line); is_intersecting && (!nearest_intersection || intersection.x < nearest_intersection.value().x)) {
+            if (const auto& [is_intersecting, intersection_type, intersection, t, u] = ray.intersection(line); is_intersecting && (!nearest_intersection || intersection.x < nearest_intersection.value().x)) {
                 nearest_intersection = intersection;
                 nearest_intersection_vertex_index = l_i;
             }

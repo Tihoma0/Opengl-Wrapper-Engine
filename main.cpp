@@ -1157,6 +1157,190 @@ void parser_test() {
     }
 }
 
+#include <iostream>
+#include <cassert>
+#include <cmath>
+#include <algorithm>
+
+// Hilfsfunktion für den Vergleich von Floats
+bool is_approx_equal(float a, float b, float epsilon = 1e-4f) {
+    return std::abs(a - b) <= epsilon;
+}
+
+void test_intersection_edge_cases() {
+    std::cout << "Starte Intersection Edge-Case Tests...\n";
+
+    // precision Konfiguration (angepasst an deine Implementierung)
+    const float precision = 0.001f;
+
+    // ==========================================
+    // 1. STANDARD-FALL: Echter Schnittpunkt (X-Kreuzung)
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 10.0f}};
+        Line seg_b{{0.0f, 10.0f}, {10.0f, 0.0f}};
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Point);
+        assert(is_approx_equal(res.point.x, 5.0f) && is_approx_equal(res.point.y, 5.0f));
+        assert(is_approx_equal(res.t, 0.5f));
+        assert(is_approx_equal(res.u, 0.5f));
+        std::cout << "[PASS] Standard X-Kreuzung\n";
+    }
+
+    // ==========================================
+    // 2. T-KREUZUNG: Endpunkt berührt Mitte des anderen Segments
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        Line seg_b{{5.0f, 5.0f}, {5.0f, 0.0f}}; // Endet exakt auf seg_a
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Touching);
+        assert(is_approx_equal(res.point.x, 5.0f) && is_approx_equal(res.point.y, 0.0f));
+        assert(is_approx_equal(res.t, 0.5f));
+        assert(is_approx_equal(res.u, 1.0f));
+        std::cout << "[PASS] T-Kreuzung (Berührung)\n";
+    }
+
+    // ==========================================
+    // 3. ECKE-AUF-ECKE: Zwei Segmente teilen sich exakt einen Endpunkt
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {5.0f, 5.0f}};
+        Line seg_b{{5.0f, 5.0f}, {10.0f, 0.0f}}; // Startet genau am Ende von a
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Touching);
+        assert(is_approx_equal(res.point.x, 5.0f) && is_approx_equal(res.point.y, 5.0f));
+        assert(is_approx_equal(res.t, 1.0f));
+        assert(is_approx_equal(res.u, 0.0f));
+        std::cout << "[PASS] Ecke-auf-Ecke Berührung\n";
+    }
+
+    // ==========================================
+    // 4. OVERLAP: Kollineare, echte Teilüberlappung
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        Line seg_b{{5.0f, 0.0f}, {15.0f, 0.0f}}; // Überlappt von x=5 bis x=10
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Overlap);
+        // Der berechnete Mittelpunkt der Überlappung liegt bei x=7.5
+        assert(is_approx_equal(res.point.x, 7.5f) && is_approx_equal(res.point.y, 0.0f));
+        // t relativ zu a (Länge 10): 7.5 / 10 = 0.75
+        assert(is_approx_equal(res.t, 0.75f));
+        // u relativ zu b (Länge 10, startet bei 5): (7.5 - 5) / 10 = 0.25
+        assert(is_approx_equal(res.u, 0.25f));
+        std::cout << "[PASS] Kollinearer Overlap (Überlappung)\n";
+    }
+
+    // ==========================================
+    // 5. PARALLEL / KOLLINEAR OHNE SCHNITT: Kein Kontakt
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        Line seg_b{{12.0f, 0.0f}, {20.0f, 0.0f}}; // Gleiche Linie, aber versetzt
+
+        auto res = seg_a.intersection(seg_b);
+        assert(!res.does_intersect);
+        std::cout << "[PASS] Kollinear ohne Kontakt\n";
+    }
+
+    // ==========================================
+    // 6. ECHTE PARALLELEN: Nebeneinander, kein Schnitt
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        Line seg_b{{0.0f, 2.0f}, {10.0f, 2.0f}}; // Parallel verschoben um y=2
+
+        auto res = seg_a.intersection(seg_b);
+        assert(!res.does_intersect);
+        std::cout << "[PASS] Parallel verschoben\n";
+    }
+
+    // ==========================================
+    // 7. DEGENERIERT: Ein Segment ist ein Punkt (Länge 0) auf der Linie
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        Line seg_b{{3.0f, 0.0f}, {3.0f, 0.0f}}; // Degeneriert zu Punkt bei x=3
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Point);
+        assert(is_approx_equal(res.point.x, 3.0f));
+        assert(is_approx_equal(res.t, 0.3f));
+        assert(is_approx_equal(res.u, 0.0f)); // u ist standardmäßig clamped/0 bei degen
+        std::cout << "[PASS] Degeneriertes Segment auf Linie\n";
+    }
+
+    // ==========================================
+    // 8. DEGENERIERT: Beide Segmente sind derselbe Punkt
+    // ==========================================
+    {
+        Line seg_a{{4.0f, 4.0f}, {4.0f, 4.0f}};
+        Line seg_b{{4.0f, 4.0f}, {4.0f, 4.0f}};
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Touching);
+        assert(is_approx_equal(res.point.x, 4.0f) && is_approx_equal(res.point.y, 4.0f));
+        assert(res.t == 0.0f && res.u == 0.0f);
+        std::cout << "[PASS] Beide Segmente zu gleichem Punkt degeneriert\n";
+    }
+
+    // ==========================================
+    // 9. OVERLAP: Komplett eingebettetes Segment
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        Line seg_b{{3.0f, 0.0f}, {7.0f, 0.0f}}; // Liegt komplett innerhalb von a
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Overlap);
+        assert(is_approx_equal(res.point.x, 5.0f)); // Mitte von 3 und 7 ist 5
+        assert(is_approx_equal(res.t, 0.5f));        // 5.0 auf seg_a (Länge 10) ist 0.5
+        std::cout << "[PASS] Eingebetteter Overlap\n";
+    }
+
+    // ==========================================
+    // 10. OVERLAP: Exakt identische Segmente
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        Line seg_b{{0.0f, 0.0f}, {10.0f, 0.0f}}; // Identisch
+
+        auto res = seg_a.intersection(seg_b);
+        assert(res.does_intersect);
+        assert(res.type == IntersectionType::Overlap);
+        std::cout << "[PASS] Identischer Overlap\n";
+    }
+
+    // ==========================================
+    // 11. FAST PARALLEL: Fast kollinear, aber kein Schnitt
+    // ==========================================
+    {
+        Line seg_a{{0.0f, 0.0f}, {10.0f, 0.0f}};
+        // Startet leicht versetzt oberhalb und verläuft minimal schräg nach oben
+        Line seg_b{{0.0f, 0.00001f}, {10.0f, 0.00002f}};
+
+        auto res = seg_a.intersection(seg_b);
+        assert(!res.does_intersect); // Darf nicht schneiden!
+        std::cout << "[PASS] Fast-Parallel Stabilität\n";
+    }
+
+
+    std::cout << "Alle Edge-Case Tests erfolgreich bestanden!\n\n";
+}
+
+
 void polygon_verification() {
     const auto window = Window::create("", 1000, 800);
     auto st = std::chrono::high_resolution_clock::now();
@@ -1164,8 +1348,10 @@ void polygon_verification() {
     {
         {0, 0},
         {100, 0},
+        // {50, 50},
         {0, 100},
         {100, 100},
+        // {50, 50},
     },
     {
         {
@@ -1224,5 +1410,5 @@ void polygon_verification() {
 }
 
 int main() {
-    polygon_verification();
+    test_intersection_edge_cases();
 }

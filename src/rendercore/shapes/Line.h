@@ -17,6 +17,8 @@ struct Intersection
     bool does_intersect = false;
     IntersectionType type = IntersectionType::None;
     Vec2 point = {};
+    float t = 0;
+    float u = 0;
 };
 
 class Line {
@@ -42,7 +44,7 @@ public:
         float o_along_len = o_along.length();
 
         const auto to_point = start() - other.start();
-
+        const auto to_other = -to_point;
         const bool is_self_degenerate = m_along_len <= precision;
         const bool is_other_degenerate = o_along_len <= precision;
         if (is_self_degenerate && is_other_degenerate)
@@ -59,20 +61,24 @@ public:
                 return {.does_intersect = false};
 
             const float p = projection_axis.dot(to_point);
-            if (p >= -precision && p <= o_along_len + precision)
-                return {.does_intersect = true, .type = IntersectionType::Point, .point = start()};
+            if (p >= -precision && p <= o_along_len + precision) {
+                float u_val = std::clamp(p / o_along_len, 0.0f, 1.0f);
+                return {.does_intersect = true, .type = IntersectionType::Point, .point = start(), .u = u_val};
+            }
             return {.does_intersect = false};
         }
         if (is_other_degenerate)
         {
             const auto projection_axis = m_along.normalized();
 
-            if (std::abs(projection_axis.cross(to_point)) >= precision)
+            if (std::abs(projection_axis.cross(to_other)) >= precision)
                 return {.does_intersect = false};
 
-            const float p = projection_axis.dot(to_point);
-            if (p >= -precision && p <= m_along_len + precision)
-                return {.does_intersect = true, .type = IntersectionType::Point, .point = other.start()};
+            const float p = projection_axis.dot(to_other);
+            if (p >= -precision && p <= m_along_len + precision) {
+                float t_val = std::clamp(p / m_along_len, 0.0f, 1.0f);
+                return {.does_intersect = true, .type = IntersectionType::Point, .point = other.start(), .t = t_val};
+            }
             return {.does_intersect = false};
         }
         const float denom = m_along.cross(o_along);
@@ -98,14 +104,17 @@ public:
                 {
                     return {.does_intersect = false};
                 }
-                const Vec2 intersection_point =
-                    end() + projection_axis * ((overlap_start + overlap_end) * 0.5f - p1); // this is the result of a long dispute... and again I was wrong - but JUST leave me my own touch!
+                const float p_mid = (overlap_start + overlap_end) * 0.5f;
+                const Vec2 intersection_point = start() + projection_axis * (p_mid - p0);
+                float t_val = (m_along_len > 0.0f) ? ((p_mid - p0) / (p1 - p0)) : 0.0f;
+                const auto other_axis = o_along / o_along_len; // normalized
+                float u_val = (o_along_len > 0.0f) ? ((intersection_point - other.start()).dot(other_axis) / o_along_len) : 0.0f;
 
-                const auto type = abs(overlap_start - overlap_end) <= precision
+                const auto type = std::abs(overlap_start - overlap_end) <= precision
                     ? IntersectionType::Touching
                     : IntersectionType::Overlap;
 
-                return {.does_intersect = true, .type = type, .point = intersection_point};
+                return {.does_intersect = true, .type = type, .point = intersection_point, .t = std::clamp(t_val, 0.0f, 1.0f), .u = std::clamp(u_val, 0.0f, 1.0f)};
             }
             return {.does_intersect = false};
         }
@@ -117,12 +126,12 @@ public:
         if (t >= -precision && t <= 1.0f + precision && u >= -precision && u <= 1.0f + precision) {
             IntersectionType type = t <= t_tolerance || t >= 1.0f - t_tolerance || u <= u_tolerance || u >= 1.0f - u_tolerance
                 ? IntersectionType::Touching
-                : IntersectionType::Overlap;
+                : IntersectionType::Point;
             Vec2 intersect_point = {
                 this->x1 + t * m_along.x,
                 this->y1 + t * m_along.y
             };
-            return {.does_intersect = true, .type = type, .point = intersect_point};
+            return {.does_intersect = true, .type = type, .point = intersect_point, .t = t, .u = u};
         }
         return {.does_intersect = false};
     }
